@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>xskill Wiki · docs 🥥</title>
+<meta name="description" content="xskill documentation — overview, quickstart, concepts, architecture, supported agents, team mode, CLI reference and configuration. Grounded in the project README and source." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥥</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body data-title-key="wiki.title">
+
+<div class="sky-decor" aria-hidden="true">
+  <div class="sun-glow"></div>
+  <div class="cloud cloud--1"></div>
+  <div class="cloud cloud--2"></div>
+</div>
+
+<!-- ===== nav ===== -->
+<header class="nav-wrap">
+  <nav class="nav">
+    <a class="brand" href="index.html" aria-label="xskill home">
+      <span class="brand__coco">🥥</span>
+      <span class="brand__name">xskill<span class="brand__dot">.wiki</span></span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+      <li><a href="#quickstart" data-i18n="w.nav_quickstart">Quickstart</a></li>
+      <li><a href="#cli" data-i18n="w.nav_cli">CLI reference</a></li>
+      <li><a href="#team" data-i18n="nav.team">Team mode</a></li>
+    </ul>
+    <div class="nav__actions">
+      <div class="lang" role="group" aria-label="language">
+        <button type="button" class="lang__btn" data-set-lang="en" data-i18n="lang.en">EN</button>
+        <button type="button" class="lang__btn" data-set-lang="zh" data-i18n="lang.zh">中</button>
+      </div>
+      <a class="chip chip--ghost" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">★ GitHub</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ===== wiki header band ===== -->
+<section class="wiki-hero">
+  <div class="wiki-hero__inner">
+    <span class="kicker" data-i18n="wiki.badge">📖 the xskill wiki</span>
+    <h1 data-i18n="wiki.h">xskill documentation</h1>
+    <p class="section__sub" data-i18n="wiki.sub">Everything below is grounded in the project README and source — no fluff.</p>
+    <a class="wiki-hero__src" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener" data-i18n="wiki.edit">Source on GitHub →</a>
+  </div>
+  <div class="wave-divider" aria-hidden="true">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0 60 C 180 110 360 10 540 50 C 720 90 900 12 1080 46 C 1260 80 1380 40 1440 56 V120 H0 Z"/></svg>
+  </div>
+</section>
+
+<!-- ===== shell: sidebar + content ===== -->
+<div class="wiki-shell">
+  <aside class="wiki-toc">
+    <div class="wiki-toc__card">
+      <h4 data-i18n="wiki.toc">On this page</h4>
+      <nav>
+        <a href="#overview" data-i18n="w.nav_overview">Overview</a>
+        <a href="#quickstart" data-i18n="w.nav_quickstart">Quickstart</a>
+        <a href="#concepts" data-i18n="w.nav_concepts">Concepts</a>
+        <a href="#how" data-i18n="w.nav_how">How it works</a>
+        <a href="#arch" data-i18n="w.nav_arch">Architecture</a>
+        <a href="#agents" data-i18n="w.nav_agents">Supported agents</a>
+        <a href="#team" data-i18n="w.nav_team">Team mode</a>
+        <a href="#cli" data-i18n="w.nav_cli">CLI reference</a>
+        <a href="#config" data-i18n="w.nav_config">Configuration</a>
+        <a href="#roadmap" data-i18n="w.nav_roadmap">Roadmap</a>
+        <a href="#news" data-i18n="w.nav_news">News</a>
+        <a href="#license" data-i18n="w.nav_license">License</a>
+      </nav>
+      <a class="wiki-toc__back" href="index.html" data-i18n="wiki.back">← Back to home</a>
+    </div>
+  </aside>
+
+  <article class="wiki-doc">
+
+    <section id="overview" class="doc-sec">
+      <h2 data-i18n="w.overview_h">Overview</h2>
+      <p data-i18n-html="w.overview_p1"></p>
+      <ul class="doc-list">
+        <li data-i18n="w.overview_l1"></li>
+        <li data-i18n="w.overview_l2"></li>
+        <li data-i18n="w.overview_l3"></li>
+        <li data-i18n="w.overview_l4"></li>
+      </ul>
+    </section>
+
+    <section id="quickstart" class="doc-sec">
+      <h2 data-i18n="w.quickstart_h">Quickstart</h2>
+      <p data-i18n-html="w.quickstart_p1"></p>
+      <pre class="code"><code><span class="c-pmt">$</span> pip install xskill          <span class="c-com"># Python 3.9+</span>
+<span class="c-pmt">$</span> xskill serve                <span class="c-com"># writes ~/.xskill/config.yaml, then exits</span></code></pre>
+      <p data-i18n-html="w.quickstart_p2"></p>
+      <pre class="code"><code>skill_dir: ~/.xskill/skill
+
+llm:
+  base_url: https://api.deepseek.com
+  model:    deepseek-v4-flash
+  api_key:  YOUR_KEY
+
+embedding:
+  # DeepSeek has no embedding model; use DashScope / OpenAI / Ollama.
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  model:    text-embedding-v4
+  api_key:  YOUR_KEY
+  dim:      0</code></pre>
+      <p data-i18n-html="w.quickstart_p3"></p>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill registry add /path/to/trajectories</code></pre>
+    </section>
+
+    <section id="concepts" class="doc-sec">
+      <h2 data-i18n="w.concepts_h">Concepts</h2>
+      <p data-i18n="w.concepts_p">Five terms cover the whole system:</p>
+      <table class="doc-table">
+        <thead><tr><th data-i18n="w.th_term">Term</th><th data-i18n="w.th_meaning">Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><b data-i18n="c.traj_t">Trajectory</b></td><td data-i18n-html="c.traj_p"></td></tr>
+          <tr><td><b data-i18n="c.atom_t">Atom</b></td><td data-i18n-html="c.atom_p"></td></tr>
+          <tr><td><b data-i18n="c.skill_t">Skill</b></td><td data-i18n-html="c.skill_p"></td></tr>
+          <tr><td><b data-i18n="c.canary_t">Canary</b></td><td data-i18n-html="c.canary_p"></td></tr>
+          <tr><td><b data-i18n="c.ux_t">UX score</b></td><td data-i18n-html="c.ux_p"></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="how" class="doc-sec">
+      <h2 data-i18n="w.how_h">How it works</h2>
+      <p data-i18n-html="w.how_p"></p>
+    </section>
+
+    <section id="arch" class="doc-sec">
+      <h2 data-i18n="w.arch_h">Architecture</h2>
+      <p data-i18n-html="w.arch_p"></p>
+      <figure class="doc-figure">
+        <img src="assets/architecture.svg" alt="xskill architecture: agent ecosystems → trajectory watcher → atom splitter → skill router → skill edit agent → canary A/B → skill repository, with team mode" loading="lazy" />
+      </figure>
+    </section>
+
+    <section id="agents" class="doc-sec">
+      <h2 data-i18n="w.agents_h">Supported agents</h2>
+      <p data-i18n="w.agents_p">Trajectory ingest and Skill install are implemented per ecosystem:</p>
+      <table class="doc-table">
+        <thead><tr><th data-i18n="agents.h_agent">Agent</th><th data-i18n="agents.h_status">Status</th><th data-i18n="agents.h_ingest">Trajectory ingest</th><th data-i18n="agents.h_install">Skill install</th></tr></thead>
+        <tbody>
+          <tr><td><b>Claude Code</b></td><td><span class="st st--ok" data-i18n="agents.st_verified">verified</span></td><td><code>~/.claude/projects/</code></td><td><code>~/.claude/skills/&lt;name&gt;/</code></td></tr>
+          <tr><td><b>Codex CLI</b></td><td><span class="st st--ok" data-i18n="agents.st_verified">verified</span></td><td><code>~/.codex/sessions/</code></td><td><code>~/.agents/skills/&lt;name&gt;/</code></td></tr>
+          <tr><td><b>OpenCode</b></td><td><span class="st st--ok" data-i18n="agents.st_verified">verified</span></td><td><code>~/.local/share/opencode/opencode.db</code></td><td><code>~/.agents/skills/&lt;name&gt;/</code></td></tr>
+          <tr><td><b>OpenClaw</b></td><td><span class="st st--wip" data-i18n="agents.st_impl">implemented</span></td><td><code>~/.openclaw/agents/</code></td><td><code>~/.agents/skills/&lt;name&gt;/</code></td></tr>
+          <tr><td><b>Cursor</b></td><td><span class="st st--wip" data-i18n="agents.st_impl">implemented</span></td><td><code>~/.cursor/projects/*/agent-transcripts/</code></td><td><code>~/.cursor/skills/&lt;name&gt;/</code></td></tr>
+          <tr><td><b>Trae</b></td><td><span class="st st--wip" data-i18n="agents.st_impl">implemented</span></td><td>IDE <code>state.vscdb</code> / CLI <code>trajectory_*.json</code></td><td><code>~/.trae-cn/skills/</code>, <code>~/.trae/skills/</code></td></tr>
+          <tr><td><b data-i18n="agents.any">Any other agent</b></td><td><span class="st" data-i18n="agents.st_manual">manual</span></td><td><code>xskill.adapters.submit_trajectory</code></td><td>copy / symlink <code>SKILL.md</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="team" class="doc-sec">
+      <h2 data-i18n="w.team_h">Team mode</h2>
+      <p data-i18n-html="w.team_p"></p>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill serve --server                        <span class="c-com"># prints a join token</span>
+<span class="c-pmt">$</span> xskill connect &lt;host:port&gt; --token &lt;token&gt; --name &lt;user-id&gt;</code></pre>
+      <ul class="doc-list">
+        <li><b data-i18n="team.b1_t"></b> — <span data-i18n="team.b1_p"></span></li>
+        <li><b data-i18n="team.b2_t"></b> — <span data-i18n="team.b2_p"></span></li>
+        <li><b data-i18n="team.b3_t"></b> — <span data-i18n="team.b3_p"></span></li>
+        <li><b data-i18n="team.b4_t"></b> — <span data-i18n="team.b4_p"></span></li>
+        <li><b data-i18n="team.b5_t"></b> — <span data-i18n-html="team.b5_p"></span></li>
+      </ul>
+      <h3 class="doc-subhead" data-i18n="w.team_daemon_h">Persistent client</h3>
+      <p data-i18n-html="w.team_daemon_p"></p>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill status
+<span class="c-pmt">$</span> xskill stop
+<span class="c-pmt">$</span> xskill start</code></pre>
+      <p data-i18n-html="w.team_proxy_p"></p>
+    </section>
+
+    <section id="cli" class="doc-sec">
+      <h2 data-i18n="w.cli_h">CLI reference</h2>
+      <p data-i18n-html="w.cli_p"></p>
+      <div class="cli-item"><code class="cli-sig">xskill serve [--host 0.0.0.0] [--port 8000] [--server]</code><p data-i18n-html="w.cli_serve"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill registry &lt;add|remove|list&gt; [path] [--label LABEL]</code><p data-i18n-html="w.cli_registry"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill search &lt;traj|skill&gt; &lt;query&gt; [-k/--top-k N]</code><p data-i18n-html="w.cli_search"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill connect [host:port] [--token TOKEN] [--name NAME] [--label LABEL] [--use-proxy] [--foreground]</code><p data-i18n-html="w.cli_connect"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill status</code><p data-i18n-html="w.cli_status"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill stop</code><p data-i18n-html="w.cli_stop"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill start</code><p data-i18n-html="w.cli_start"></p></div>
+    </section>
+
+    <section id="config" class="doc-sec">
+      <h2 data-i18n="w.config_h">Configuration</h2>
+      <p data-i18n-html="w.config_p"></p>
+      <pre class="code"><code>llm:
+  base_url: https://api.deepseek.com
+  model:    deepseek-v4-flash
+  api_key:  YOUR_KEY
+  rate_limit:
+    rpm: 60          <span class="c-com"># match your provider plan</span>
+    tpm: 100000      <span class="c-com"># optional</span>
+    burst: 10        <span class="c-com"># optional; default = ceil(rate/6)</span></code></pre>
+      <p data-i18n-html="w.config_p2"></p>
+    </section>
+
+    <section id="roadmap" class="doc-sec">
+      <h2 data-i18n="w.roadmap_h">Roadmap</h2>
+      <ul class="doc-list">
+        <li data-i18n="w.rm1"></li>
+        <li data-i18n="w.rm2"></li>
+        <li data-i18n="w.rm3"></li>
+        <li data-i18n="w.rm4"></li>
+        <li data-i18n="w.rm5"></li>
+      </ul>
+    </section>
+
+    <section id="news" class="doc-sec">
+      <h2 data-i18n="w.news_h">News</h2>
+      <ul class="doc-list doc-list--news">
+        <li data-i18n-html="w.news1"></li>
+        <li data-i18n-html="w.news2"></li>
+        <li data-i18n-html="w.news3"></li>
+        <li data-i18n-html="w.news4"></li>
+        <li data-i18n-html="w.news5"></li>
+      </ul>
+    </section>
+
+    <section id="license" class="doc-sec">
+      <h2 data-i18n="w.license_h">License</h2>
+      <p data-i18n="w.license_p">MIT © 370025263. See the LICENSE file in the repository.</p>
+    </section>
+
+  </article>
+</div>
+
+<footer class="footer">
+  <div class="footer__bar footer__bar--wiki">
+    <span data-i18n="foot.copy">MIT © 370025263 — brewed under a palm tree.</span>
+    <span><a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a> · <a href="https://pypi.org/project/xskill/" target="_blank" rel="noopener">PyPI</a> · <a href="index.html" data-i18n="wiki.back">← Back to home</a></span>
+  </div>
+</footer>
+
+<script src="i18n.js"></script>
+<script src="wiki.js"></script>
+</body>
+</html>

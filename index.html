@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>xskill · One solves it. Everyone gets it.</title>
+<meta name="description" content="xskill distills reusable Skills from AI agent execution trajectories, shares them across teams, and evolves them with UX-driven canary tests. Open-source, MIT, Python 3.9+." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥥</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body data-title-key="index.title">
+
+<div class="sky-decor" aria-hidden="true">
+  <div class="sun-glow"></div>
+  <div class="cloud cloud--1"></div>
+  <div class="cloud cloud--2"></div>
+  <div class="cloud cloud--3"></div>
+  <div class="gull gull--1">︵</div>
+  <div class="gull gull--2">︵</div>
+</div>
+
+<!-- ===== nav ===== -->
+<header class="nav-wrap">
+  <nav class="nav">
+    <a class="brand" href="#top" aria-label="xskill home">
+      <span class="brand__coco">🥥</span>
+      <span class="brand__name">xskill<span class="brand__dot">.wiki</span></span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="#pipeline" data-i18n="nav.howitworks">How it works</a></li>
+      <li><a href="#concepts" data-i18n="nav.concepts">Concepts</a></li>
+      <li><a href="#agents" data-i18n="nav.agents">Agents</a></li>
+      <li><a href="#team" data-i18n="nav.team">Team mode</a></li>
+      <li><a href="#public-hub" data-i18n="nav.hub">Public hub</a></li>
+      <li><a href="wiki.html" data-i18n="nav.wiki">Wiki</a></li>
+    </ul>
+    <div class="nav__actions">
+      <div class="lang" role="group" aria-label="language">
+        <button type="button" class="lang__btn" data-set-lang="en" data-i18n="lang.en">EN</button>
+        <button type="button" class="lang__btn" data-set-lang="zh" data-i18n="lang.zh">中</button>
+      </div>
+      <a class="chip chip--ghost" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">★ GitHub</a>
+      <a class="btn btn--mini" href="#start" data-i18n="nav.getstarted">Get&nbsp;Started</a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero__inner">
+    <div class="hero__copy">
+      <span class="eyebrow"><span data-i18n="hero.eyebrow">open-source · MIT · v0.6.2 on PyPI</span></span>
+      <h1 class="hero__title">
+        <span data-i18n="hero.title_a">Trajectories in.</span><br />
+        <span class="hl" data-i18n="hero.title_b">Reusable skills out.</span>
+      </h1>
+      <p class="hero__tagline" data-i18n="hero.tagline">One solves it. Everyone gets it.</p>
+      <p class="hero__lede" data-i18n-html="hero.lede">Your coding agent re-derives the same solution every time it hits a familiar problem. <strong>xskill</strong> distills the patterns that actually worked into Skill files your agent loads automatically.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="#start"><span class="btn__shine"></span><span data-i18n="hero.cta_start">🏖️ Get started</span></a>
+        <a class="btn btn--wood" href="#public-hub" data-i18n="hero.cta_hub">🌐 Join public hub</a>
+        <a class="btn btn--glass" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener" data-i18n="hero.cta_github">★ GitHub</a>
+      </div>
+      <p class="hero__sub" data-i18n="hero.sub">MIT-licensed · Python 3.9+ · no model weights touched.</p>
+    </div>
+
+    <figure class="postcard" aria-label="A tropical beach where trajectories become skills">
+      <div class="postcard__tape postcard__tape--l"></div>
+      <div class="postcard__tape postcard__tape--r"></div>
+      <div class="scene">
+        <svg class="scene__svg" viewBox="0 0 520 420" role="img" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd6a0"/><stop offset="0.45" stop-color="#ffb38a"/><stop offset="0.75" stop-color="#8fd9d6"/><stop offset="1" stop-color="#62c3c9"/></linearGradient>
+            <radialGradient id="sunG" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff4cf"/><stop offset="0.6" stop-color="#ffd45e"/><stop offset="1" stop-color="#ff9d4d"/></radialGradient>
+            <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3aa7b3"/><stop offset="1" stop-color="#1f7f8c"/></linearGradient>
+            <linearGradient id="sandG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fce7bd"/><stop offset="1" stop-color="#e9c98c"/></linearGradient>
+            <linearGradient id="trunk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a9743f"/><stop offset="0.5" stop-color="#cd9457"/><stop offset="1" stop-color="#9a6634"/></linearGradient>
+          </defs>
+          <rect x="0" y="0" width="520" height="300" fill="url(#sky)"/>
+          <circle class="scene__sun" cx="360" cy="120" r="54" fill="url(#sunG)"/>
+          <circle cx="360" cy="120" r="70" fill="#fff" opacity="0.18"/>
+          <g fill="#fff" opacity="0.9"><ellipse class="scene__cloud" cx="120" cy="78" rx="44" ry="17"/><ellipse class="scene__cloud" cx="95" cy="86" rx="30" ry="13"/></g>
+          <rect x="0" y="232" width="520" height="80" fill="url(#seaG)"/>
+          <g stroke="#bfeef0" stroke-width="3" fill="none" opacity="0.7" stroke-linecap="round">
+            <path class="scene__wave" d="M0 250 q 26 -10 52 0 t 52 0 t 52 0 t 52 0 t 52 0 t 52 0 t 52 0 t 52 0 t 52 0"/>
+            <path class="scene__wave2" d="M0 272 q 26 -9 52 0 t 52 0 t 52 0 t 52 0 t 52 0 t 52 0 t 52 0 t 52 0 t 52 0"/>
+          </g>
+          <path d="M0 300 q 130 -34 260 -8 t 260 -2 V420 H0 Z" fill="url(#sandG)"/>
+          <ellipse cx="260" cy="318" rx="300" ry="26" fill="#fff" opacity="0.25"/>
+          <g class="scene__palm">
+            <path d="M86 392 C 78 320 70 268 92 214" stroke="url(#trunk)" stroke-width="13" fill="none" stroke-linecap="round"/>
+            <g fill="#2f9e6a">
+              <path d="M92 214 C 60 196 34 196 14 214 C 44 200 72 206 92 220 Z"/>
+              <path d="M92 214 C 124 192 156 192 178 210 C 146 200 114 204 92 220 Z"/>
+              <path d="M92 214 C 70 186 58 158 64 132 C 78 162 90 188 96 214 Z"/>
+              <path d="M92 214 C 116 188 130 162 128 134 C 116 166 102 190 94 214 Z"/>
+            </g>
+            <circle cx="86" cy="220" r="6" fill="#6b4423"/><circle cx="98" cy="222" r="6" fill="#6b4423"/>
+          </g>
+          <g class="scene__bottle">
+            <rect x="350" y="300" width="20" height="46" rx="9" fill="#bfe9c9" stroke="#7bc59a" stroke-width="2"/>
+            <rect x="356" y="292" width="8" height="12" rx="3" fill="#a9743f"/>
+            <rect x="354" y="312" width="12" height="22" rx="3" fill="#f6e7c1"/>
+          </g>
+          <g class="scene__coco">
+            <ellipse cx="430" cy="372" rx="34" ry="12" fill="#6b4423" opacity="0.25"/>
+            <path d="M404 352 a26 26 0 0 0 52 0 a26 22 0 0 0 -52 0Z" fill="#8a5a30"/>
+            <ellipse cx="430" cy="352" rx="26" ry="9" fill="#f7f1e3"/>
+            <ellipse cx="430" cy="352" rx="16" ry="5" fill="#d9eef0"/>
+            <rect x="442" y="318" width="4" height="40" rx="2" fill="#ff6f91" transform="rotate(14 444 338)"/>
+            <path d="M414 348 q-6 -10 2 -16" stroke="#3fb87f" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <circle cx="416" cy="330" r="4" fill="#ff5d8f"/>
+          </g>
+        </svg>
+
+        <div class="float-card">
+          <div class="float-card__head">
+            <span class="gem">💎</span>
+            <span class="float-card__name">SKILL.md</span>
+            <span class="badge badge--live">canary ✓</span>
+          </div>
+          <div class="float-card__meta"><span>v3</span><span>·</span><span>UX 8.7/10</span><span>·</span><span>winning</span></div>
+          <div class="float-card__bar"><i style="--w:87%"></i></div>
+          <p class="float-card__note" data-i18n="float.note">example — a Skill is a versioned git dir, kept by its UX score</p>
+        </div>
+      </div>
+      <figcaption class="postcard__caption">greetings from&nbsp; <b>~/.xskill/skill</b> 🌅</figcaption>
+    </figure>
+  </div>
+
+  <div class="wave-divider" aria-hidden="true">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0 60 C 180 110 360 10 540 50 C 720 90 900 12 1080 46 C 1260 80 1380 40 1440 56 V120 H0 Z"/></svg>
+  </div>
+</section>
+
+<!-- ===== STATS (verifiable facts) ===== -->
+<section class="stats">
+  <div class="stats__grid">
+    <div class="stat"><span class="stat__ico">🏷️</span><b>v0.6.2</b><span class="stat__label" data-i18n="stats.version_l">current release</span></div>
+    <div class="stat"><span class="stat__ico">🌴</span><b class="count" data-to="6">0</b><span class="stat__label" data-i18n="stats.agents_l">agents supported</span></div>
+    <div class="stat"><span class="stat__ico">🐍</span><b>3.9+</b><span class="stat__label" data-i18n="stats.python_l">Python</span></div>
+    <div class="stat"><span class="stat__ico">🌊</span><b>MIT</b><span class="stat__label" data-i18n="stats.license_l">open source</span></div>
+  </div>
+</section>
+
+<!-- ===== LATEST RELEASE ===== -->
+<section class="section" id="release">
+  <div class="section__head">
+    <span class="kicker" data-i18n="rel.kicker">latest release</span>
+    <h2 data-i18n="rel.title">v0.6.2 adds identity-aware recommendations</h2>
+    <p class="section__sub" data-i18n="rel.sub">The current README highlights user profiling, SkillHub retrieval, UX score APIs, and Windows scheduled-task persistence.</p>
+  </div>
+  <div class="features features--release">
+    <article class="feature"><div class="feature__ico">ID</div><h3 data-i18n="rel.f1_t">Stable user identity</h3><p data-i18n-html="rel.f1_p"></p></article>
+    <article class="feature"><div class="feature__ico">80</div><h3 data-i18n="rel.f2_t">Hybrid recommendations</h3><p data-i18n-html="rel.f2_p"></p></article>
+    <article class="feature"><div class="feature__ico">UX</div><h3 data-i18n="rel.f3_t">UX score queries</h3><p data-i18n-html="rel.f3_p"></p></article>
+    <article class="feature"><div class="feature__ico">WIN</div><h3 data-i18n="rel.f4_t">Windows daemon</h3><p data-i18n-html="rel.f4_p"></p></article>
+  </div>
+</section>
+
+<!-- ===== PIPELINE (how it works) ===== -->
+<section class="section" id="pipeline">
+  <div class="section__head">
+    <span class="kicker" data-i18n="pipe.kicker">how it works</span>
+    <h2 data-i18n="pipe.title">A few narrow agents, one self-growing library</h2>
+    <p class="section__sub" data-i18n="pipe.sub">Every Skill is its own git repository — every change versioned and reversible.</p>
+  </div>
+  <ol class="pipe">
+    <li class="pipe__step" style="--accent:#3aa7b3"><div class="pipe__disc"><span>👀</span></div><h3><span class="pipe__n">1</span> <span data-i18n="pipe.s1_t">Watch</span></h3><p data-i18n-html="pipe.s1_p"></p></li>
+    <li class="pipe__step" style="--accent:#e08a3c"><div class="pipe__disc"><span>🔪🥥</span></div><h3><span class="pipe__n">2</span> <span data-i18n="pipe.s2_t">Split into Atoms</span></h3><p data-i18n-html="pipe.s2_p"></p></li>
+    <li class="pipe__step" style="--accent:#2f9e6a"><div class="pipe__disc"><span>🧭</span></div><h3><span class="pipe__n">3</span> <span data-i18n="pipe.s3_t">Route to a Skill</span></h3><p data-i18n-html="pipe.s3_p"></p></li>
+    <li class="pipe__step" style="--accent:#c75d8a"><div class="pipe__disc"><span>✍️</span></div><h3><span class="pipe__n">4</span> <span data-i18n="pipe.s4_t">Rewrite SKILL.md</span></h3><p data-i18n-html="pipe.s4_p"></p></li>
+    <li class="pipe__step" style="--accent:#d98c2b"><div class="pipe__disc"><span>🐤</span></div><h3><span class="pipe__n">5</span> <span data-i18n="pipe.s5_t">Canary A/B + UX score</span></h3><p data-i18n-html="pipe.s5_p"></p></li>
+  </ol>
+</section>
+
+<!-- ===== AGENTS MATRIX ===== -->
+<section class="section section--sand" id="agents">
+  <div class="section__head">
+    <span class="kicker" data-i18n="agents.kicker">works with your agents</span>
+    <h2 data-i18n="agents.title">Plug into the agent you already use</h2>
+    <p class="section__sub" data-i18n="agents.sub">Trajectory ingest and Skill install are wired up per ecosystem.</p>
+  </div>
+  <div class="board">
+    <table class="board__table">
+      <thead>
+        <tr>
+          <th data-i18n="agents.h_agent">Agent</th>
+          <th data-i18n="agents.h_status">Status</th>
+          <th data-i18n="agents.h_ingest">Trajectory ingest</th>
+          <th data-i18n="agents.h_install">Skill install</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="skill-name">🌴 Claude Code</td><td><span class="st st--ok" data-i18n="agents.st_verified">verified</span></td><td><code>~/.claude/projects/</code></td><td><code>~/.claude/skills/&lt;name&gt;/</code></td></tr>
+        <tr><td class="skill-name">🛶 Codex CLI</td><td><span class="st st--ok" data-i18n="agents.st_verified">verified</span></td><td><code>~/.codex/sessions/</code></td><td><code>~/.agents/skills/&lt;name&gt;/</code></td></tr>
+        <tr><td class="skill-name">🐙 OpenCode</td><td><span class="st st--ok" data-i18n="agents.st_verified">verified</span></td><td><code>opencode.db</code> (SQLite)</td><td><code>~/.agents/skills/&lt;name&gt;/</code></td></tr>
+        <tr><td class="skill-name">🐚 OpenClaw</td><td><span class="st st--wip" data-i18n="agents.st_impl">implemented</span></td><td><code>~/.openclaw/agents/</code></td><td><code>~/.agents/skills/&lt;name&gt;/</code></td></tr>
+        <tr><td class="skill-name">💠 Cursor</td><td><span class="st st--wip" data-i18n="agents.st_impl">implemented</span></td><td><code>~/.cursor/.../agent-transcripts/</code></td><td><code>~/.cursor/skills/&lt;name&gt;/</code></td></tr>
+        <tr><td class="skill-name">🚄 Trae</td><td><span class="st st--wip" data-i18n="agents.st_impl">implemented</span></td><td><code>state.vscdb</code> / <code>trajectory_*.json</code></td><td><code>~/.trae-cn/skills/</code>, <code>~/.trae/skills/</code></td></tr>
+        <tr><td class="skill-name" data-i18n="agents.any">Any other agent</td><td><span class="st" data-i18n="agents.st_manual">manual</span></td><td><code>xskill.adapters.submit_trajectory</code></td><td data-i18n="agents.h_install">copy / symlink SKILL.md</td></tr>
+      </tbody>
+    </table>
+    <p class="board__foot-note" data-i18n="agents.note">Status as of v0.6.2 · 🟡 implemented, with Claude Code / Codex / OpenCode verified.</p>
+  </div>
+</section>
+
+<!-- ===== CONCEPTS ===== -->
+<section class="section" id="concepts">
+  <div class="section__head">
+    <span class="kicker" data-i18n="concepts.kicker">vocabulary</span>
+    <h2 data-i18n="concepts.title">Five words and you've got it</h2>
+  </div>
+  <div class="cards cards--concepts">
+    <article class="card card--concept" style="--g:linear-gradient(135deg,#ff926f,#ef5d3f)"><div class="card__banner" style="background:var(--g)"><span class="card__emoji">🧭</span></div><div class="card__body"><h3 class="card__title" data-i18n="c.traj_t">Trajectory</h3><p class="card__desc" data-i18n-html="c.traj_p"></p></div></article>
+    <article class="card card--concept" style="--g:linear-gradient(135deg,#ffc23d,#e08a3c)"><div class="card__banner" style="background:var(--g)"><span class="card__emoji">⚛️</span></div><div class="card__body"><h3 class="card__title" data-i18n="c.atom_t">Atom</h3><p class="card__desc" data-i18n-html="c.atom_p"></p></div></article>
+    <article class="card card--concept" style="--g:linear-gradient(135deg,#2f9e6a,#1f7d52)"><div class="card__banner" style="background:var(--g)"><span class="card__emoji">💎</span></div><div class="card__body"><h3 class="card__title" data-i18n="c.skill_t">Skill</h3><p class="card__desc" data-i18n-html="c.skill_p"></p></div></article>
+    <article class="card card--concept" style="--g:linear-gradient(135deg,#3aa7b3,#136772)"><div class="card__banner" style="background:var(--g)"><span class="card__emoji">🐤</span></div><div class="card__body"><h3 class="card__title" data-i18n="c.canary_t">Canary</h3><p class="card__desc" data-i18n-html="c.canary_p"></p></div></article>
+    <article class="card card--concept" style="--g:linear-gradient(135deg,#c75d8a,#9a3f66)"><div class="card__banner" style="background:var(--g)"><span class="card__emoji">⭐</span></div><div class="card__body"><h3 class="card__title" data-i18n="c.ux_t">UX score</h3><p class="card__desc" data-i18n-html="c.ux_p"></p></div></article>
+  </div>
+</section>
+
+<!-- ===== TEAM MODE ===== -->
+<section class="section section--ocean" id="team">
+  <div class="section__head section__head--light">
+    <span class="kicker kicker--light" data-i18n="team.kicker">the killer use case</span>
+    <h2 data-i18n="team.title">Team mode: one library, the whole team</h2>
+    <p class="section__sub" data-i18n="team.sub">One machine is the server; everyone else joins as a thin client.</p>
+  </div>
+  <div class="team">
+    <div class="team__terminal">
+      <div class="terminal">
+        <div class="terminal__bar"><i></i><i></i><i></i><span>team</span></div>
+        <pre class="terminal__body"><code><span class="c-com" data-i18n="team.cmd_note"># Start a server, then join from any machine:</span>
+<span class="c-pmt">$</span> xskill serve --server
+<span class="c-pmt">$</span> xskill connect &lt;host:port&gt; --token &lt;token&gt; --name &lt;user-id&gt;</code></pre>
+      </div>
+    </div>
+    <div class="team__bullets">
+      <div class="tb"><span class="tb__ico">🪄</span><div><h4 data-i18n="team.b1_t">Silently distill your top performers</h4><p data-i18n="team.b1_p"></p></div></div>
+      <div class="tb"><span class="tb__ico">🔌</span><div><h4 data-i18n="team.b2_t">Any workflow plugs in</h4><p data-i18n="team.b2_p"></p></div></div>
+      <div class="tb"><span class="tb__ico">🔒</span><div><h4 data-i18n="team.b3_t">Trajectories stay private</h4><p data-i18n="team.b3_p"></p></div></div>
+      <div class="tb"><span class="tb__ico">🧪</span><div><h4 data-i18n="team.b4_t">A/B-driven evolution</h4><p data-i18n="team.b4_p"></p></div></div>
+      <div class="tb"><span class="tb__ico">🧑‍🏫</span><div><h4 data-i18n="team.b5_t">Experts can teach by hand</h4><p data-i18n-html="team.b5_p"></p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PUBLIC HUB ===== -->
+<section class="section section--sand" id="public-hub">
+  <div class="section__head">
+    <span class="kicker" data-i18n="hub.kicker">公网演示实例</span>
+    <h2 data-i18n="hub.title">一键粘贴，接入我们的公网实例</h2>
+    <p class="section__sub" data-i18n="hub.sub">不用自己搭服务端。装好 xskill，粘贴下面这条连接命令，再填上你自己的用户名即可。</p>
+  </div>
+  <div class="hub">
+    <div class="hub__meta">
+      <div class="tb"><span class="tb__ico">🌐</span><div><h4 data-i18n="hub.label_host">地址</h4><p><code>https://hub.xskill.wiki</code></p></div></div>
+      <div class="tb"><span class="tb__ico">🔑</span><div><h4 data-i18n="hub.label_token">连接令牌</h4><p><code id="hub-token">dd7f641c16ced6d1db43e754055fd2c8</code></p></div></div>
+      <div class="tb"><span class="tb__ico">📊</span><div><h4 data-i18n="hub.label_dash">控制台</h4><p><a href="https://hub.xskill.wiki/" target="_blank" rel="noopener">hub.xskill.wiki</a></p></div></div>
+    </div>
+    <div class="hub__terminal">
+      <div class="terminal">
+        <div class="terminal__bar">
+          <i></i><i></i><i></i>
+          <span data-i18n="hub.term_title">公网实例</span>
+          <button type="button" class="hub-copy" id="hub-copy-btn" data-i18n="hub.copy">复制</button>
+        </div>
+        <pre class="terminal__body"><code id="hub-connect-cmd" data-i18n-html="hub.cmd_html"><span class="c-com"># 1）安装　2）把 YOUR_NAME 换成你的用户名</span>
+<span class="c-pmt">$</span> pip install -U xskill
+<span class="c-pmt">$</span> xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 --name YOUR_NAME</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY ===== -->
+<section class="section" id="why">
+  <div class="section__head">
+    <span class="kicker" data-i18n="why.kicker">why xskill</span>
+    <h2 data-i18n="why.title">Stop hand-maintaining a prompt library that rots</h2>
+  </div>
+  <div class="features">
+    <article class="feature"><div class="feature__ico">🥥</div><h3 data-i18n="why.f1_t">Distilled automatically</h3><p data-i18n="why.f1_p"></p></article>
+    <article class="feature"><div class="feature__ico">🌱</div><h3 data-i18n="why.f2_t">Grows itself</h3><p data-i18n="why.f2_p"></p></article>
+    <article class="feature"><div class="feature__ico">✋</div><h3 data-i18n="why.f3_t">Learns from your edits</h3><p data-i18n="why.f3_p"></p></article>
+    <article class="feature"><div class="feature__ico">⭐</div><h3 data-i18n="why.f4_t">UX-driven evolution</h3><p data-i18n="why.f4_p"></p></article>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta" id="start">
+  <div class="cta__card">
+    <span class="cta__sun">🌅</span>
+    <h2 data-i18n="cta.title">Distill your first Skill in two lines.</h2>
+    <div class="terminal">
+      <div class="terminal__bar"><i></i><i></i><i></i><span>~/.xskill — bash</span></div>
+      <pre class="terminal__body"><code><span class="c-com" data-i18n="cta.c1"># install — Python 3.9+</span>
+<span class="c-pmt">$</span> pip install xskill
+<span class="c-com" data-i18n="cta.c2"># writes ~/.xskill/config.yaml, then exits — add your model keys</span>
+<span class="c-pmt">$</span> xskill serve
+<span class="c-com" data-i18n="cta.c3"># run again: auto-detects your agents and starts watching</span>
+<span class="c-pmt">$</span> xskill serve</code></pre>
+    </div>
+    <div class="cta__btns">
+      <a class="btn btn--primary" href="wiki.html#quickstart"><span class="btn__shine"></span><span data-i18n="cta.read">Read the quickstart</span></a>
+      <a class="btn btn--glass" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener" data-i18n="cta.star">★ Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="footer__top">
+    <div class="footer__brand">
+      <span class="brand__coco">🥥</span>
+      <div>
+        <b>xskill<span class="brand__dot">.wiki</span></b>
+        <p data-i18n="foot.tagline">One solves it. Everyone gets it. Sand everywhere.</p>
+      </div>
+    </div>
+    <nav class="footer__cols">
+      <div><h4 data-i18n="foot.product">Product</h4><a href="#pipeline" data-i18n="nav.howitworks">How it works</a><a href="#concepts" data-i18n="nav.concepts">Concepts</a><a href="#team" data-i18n="nav.team">Team mode</a><a href="#public-hub" data-i18n="nav.hub">Public hub</a><a href="wiki.html" data-i18n="nav.wiki">Wiki</a></div>
+      <div><h4 data-i18n="foot.docs">Docs</h4><a href="wiki.html#quickstart" data-i18n="w.nav_quickstart">Quickstart</a><a href="wiki.html#cli" data-i18n="w.nav_cli">CLI reference</a><a href="wiki.html#config" data-i18n="w.nav_config">Configuration</a><a href="wiki.html#roadmap" data-i18n="w.nav_roadmap">Roadmap</a></div>
+      <div><h4 data-i18n="foot.community">Community</h4><a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a><a href="https://pypi.org/project/xskill/" target="_blank" rel="noopener">PyPI</a><a href="https://github.com/SkillNerds/xskill/releases/tag/v0.6.2" target="_blank" rel="noopener">Releases</a><a href="https://github.com/SkillNerds/xskill/blob/main/LICENSE" target="_blank" rel="noopener" data-i18n="w.nav_license">License</a></div>
+    </nav>
+  </div>
+  <div class="footer__bar">
+    <span data-i18n="foot.copy">MIT © 370025263 — brewed under a palm tree.</span>
+    <span class="canary">🥥 canary-guid: c0c0-nut5-beac-h420-sand</span>
+  </div>
+</footer>
+
+<script src="i18n.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
