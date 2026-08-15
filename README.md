@@ -1,5 +1,78 @@
 # xskill.wiki
 
-线上：https://xskill.wiki（`/v2/` 同源）。
+线上站点：[https://xskill.wiki](https://xskill.wiki)（`#start` 是新同学入口）。
 
-这是产品站源码的备份仓。静态文件直接伺服，目录对应本机 `xskill-wiki-v2`。
+这是产品站和文档站的源码。往 **`main`** 推送后，几秒内会同步到线上。
+
+新同学请先看：[快速上手](https://xskill.wiki/#start) · [常用命令](https://xskill.wiki/wiki.html#features) · [怎么给文档补一页](https://xskill.wiki/wiki.html#contribute)
+
+---
+
+## 这是什么
+
+xskill 会看你的编程助手（Claude Code、Codex、Cursor 等）平时怎么干活，把真正跑通的做法整理成技能文件（`SKILL.md`）。下次遇到同类问题，助手可以直接用，不用每次从零再推一遍。
+
+一个人解决过的问题，可以变成全组都能用的技能。
+
+不想自己搭服务器时，可以接到公网实例：
+
+```bash
+pip install -U xskill
+xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 --name 你的名字
+```
+
+把 `你的名字` 换成自己的用户名。连上之后它会在后台常驻：上传你的会话记录、把技能装到你正在用的助手里。
+
+---
+
+## 新同学先记住这四件事
+
+| 你想做的事 | 用这个 |
+| --- | --- |
+| 用一句话，让系统马上写或改一条技能 | `xskill generate` |
+| 手里已经有一份技能文件夹，想让同事搜到 | `xskill upload` |
+| 把现成技能收进 xskill 自己的技能库，并装到助手里 | `xskill import` |
+| 直接改本机技能文件，改动自动传到服务器当草稿 | 手改即可，`connect` 常驻时会自动上传 |
+
+这四件事的完整说明在 [Wiki · 常用命令](https://xskill.wiki/wiki.html#features)，源文件在 [`docs/features/`](docs/features/)。
+
+和相近命令不要混：
+
+- **upload** 是「放到共享目录，给人搜」。
+- **import** 是「收进正式技能库，带版本，并装到助手里」。
+- **generate** 是「你说话，服务器代写」。
+- **手改自动上传** 不会立刻覆盖全队正式版，只作为下一轮自动改写的参考。
+
+---
+
+## 怎么给文档补一页（欢迎新同学）
+
+发现某个命令网站上没写清楚？请直接补文档，不必先问。
+
+1. 打开这个仓库：<https://github.com/SkillNerds/xskill-wiki>
+2. 复制 [`docs/features/_template.md`](docs/features/_template.md)，改名为命令名，例如 `search.md`
+3. 用白话写：一句话是什么、什么时候用、怎么敲、和相近命令的差别、要注意什么。**不要写只有内部才懂的词**；非写不可时，先用一句人话解释。
+4. 在 `wiki.html` 的「常用命令」里加一小节，目录里加一条链接。
+5. 在 `i18n.js` 里同时补 **英文** 和 **中文** 文案（命令本身不要翻译）。
+6. 开 Pull Request，或有写权限就推到 `main`。`main` 会自动发到 <https://xskill.wiki>。
+
+一篇合格的特性说明，大约一屏就能看完。范例：
+
+- [`docs/features/generate.md`](docs/features/generate.md)
+- [`docs/features/upload.md`](docs/features/upload.md)
+- [`docs/features/import.md`](docs/features/import.md)
+- [`docs/features/rewrite-auto-upload.md`](docs/features/rewrite-auto-upload.md)
+
+产品代码在 <https://github.com/SkillNerds/xskill>。文档仓库只放网站和说明。
+
+---
+
+## 本机开发这个网站
+
+静态 HTML，没有构建步骤。用浏览器直接打开 `index.html`，或：
+
+```bash
+python3 -m http.server 8009 --bind 127.0.0.1 --directory .
+```
+
+改完推 `main` 即可上线。本机工作区有未提交改动时，自动同步会拒绝拉取，以免冲掉正在改的东西。

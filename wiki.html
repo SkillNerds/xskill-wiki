@@ -29,8 +29,8 @@
     <ul class="nav__links">
       <li><a href="index.html" data-i18n="nav.home">Home</a></li>
       <li><a href="#quickstart" data-i18n="w.nav_quickstart">Quickstart</a></li>
-      <li><a href="#cli" data-i18n="w.nav_cli">CLI reference</a></li>
-      <li><a href="#team" data-i18n="nav.team">Team mode</a></li>
+      <li><a href="#features" data-i18n="w.nav_features">Common commands</a></li>
+      <li><a href="#contribute" data-i18n="w.nav_contribute">Add a docs page</a></li>
     </ul>
     <div class="nav__actions">
       <div class="lang" role="group" aria-label="language">
@@ -47,8 +47,8 @@
   <div class="wiki-hero__inner">
     <span class="kicker" data-i18n="wiki.badge">📖 the xskill wiki</span>
     <h1 data-i18n="wiki.h">xskill documentation</h1>
-    <p class="section__sub" data-i18n="wiki.sub">Everything below is grounded in the project README and source — no fluff.</p>
-    <a class="wiki-hero__src" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener" data-i18n="wiki.edit">Source on GitHub →</a>
+    <p class="section__sub" data-i18n="wiki.sub">Written for people who just arrived. Commands stay in English; the rest is plain language.</p>
+    <a class="wiki-hero__src" href="https://github.com/SkillNerds/xskill-wiki" target="_blank" rel="noopener" data-i18n="wiki.edit">Edit this wiki on GitHub →</a>
   </div>
   <div class="wave-divider" aria-hidden="true">
     <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0 60 C 180 110 360 10 540 50 C 720 90 900 12 1080 46 C 1260 80 1380 40 1440 56 V120 H0 Z"/></svg>
@@ -63,6 +63,12 @@
       <nav>
         <a href="#overview" data-i18n="w.nav_overview">Overview</a>
         <a href="#quickstart" data-i18n="w.nav_quickstart">Quickstart</a>
+        <a href="#features" data-i18n="w.nav_features">Common commands</a>
+        <a href="#generate">generate</a>
+        <a href="#upload">upload</a>
+        <a href="#import">import</a>
+        <a href="#rewrite" data-i18n="w.nav_rewrite">Hand edits</a>
+        <a href="#contribute" data-i18n="w.nav_contribute">Add a docs page</a>
         <a href="#concepts" data-i18n="w.nav_concepts">Concepts</a>
         <a href="#how" data-i18n="w.nav_how">How it works</a>
         <a href="#arch" data-i18n="w.nav_arch">Architecture</a>
@@ -112,6 +118,117 @@ embedding:
   dim:      0</code></pre>
       <p data-i18n-html="w.quickstart_p3"></p>
       <pre class="code"><code><span class="c-pmt">$</span> xskill registry add /path/to/trajectories</code></pre>
+      <p data-i18n-html="w.quickstart_hub"></p>
+    </section>
+
+    <section id="features" class="doc-sec">
+      <h2 data-i18n="w.feat_h">Common commands</h2>
+      <p data-i18n-html="w.feat_p"></p>
+      <table class="doc-table">
+        <thead><tr><th data-i18n="w.feat_th_want">You want to…</th><th data-i18n="w.feat_th_use">Use</th></tr></thead>
+        <tbody>
+          <tr><td data-i18n="w.feat_r1"></td><td><a href="#generate"><code>xskill generate</code></a></td></tr>
+          <tr><td data-i18n="w.feat_r2"></td><td><a href="#upload"><code>xskill upload</code></a></td></tr>
+          <tr><td data-i18n="w.feat_r3"></td><td><a href="#import"><code>xskill import</code></a></td></tr>
+          <tr><td data-i18n="w.feat_r4"></td><td><a href="#rewrite" data-i18n="w.nav_rewrite">Hand edits</a></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="generate" class="doc-sec">
+      <h2>xskill generate</h2>
+      <p data-i18n="w.gen_one"></p>
+      <h3 class="doc-subhead" data-i18n="w.when">When to use it</h3>
+      <ul class="doc-list">
+        <li data-i18n="w.gen_w1"></li>
+        <li data-i18n="w.gen_w2"></li>
+        <li data-i18n="w.gen_w3"></li>
+      </ul>
+      <h3 class="doc-subhead" data-i18n="w.howcmd">How</h3>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill generate "把处理发票报销的步骤写成技能"
+<span class="c-pmt">$</span> xskill generate --name alice,bob "把他们处理发布失败的办法写成技能"</code></pre>
+      <p data-i18n-html="w.gen_after"></p>
+      <h3 class="doc-subhead" data-i18n="w.notes">Notes</h3>
+      <ul class="doc-list">
+        <li data-i18n="w.gen_n1"></li>
+        <li data-i18n="w.gen_n2"></li>
+        <li data-i18n="w.gen_n3"></li>
+      </ul>
+    </section>
+
+    <section id="upload" class="doc-sec">
+      <h2>xskill upload</h2>
+      <p data-i18n="w.up_one"></p>
+      <h3 class="doc-subhead" data-i18n="w.when">When to use it</h3>
+      <ul class="doc-list">
+        <li data-i18n="w.up_w1"></li>
+        <li data-i18n="w.up_w2"></li>
+      </ul>
+      <h3 class="doc-subhead" data-i18n="w.howcmd">How</h3>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill upload ./my-skill
+<span class="c-com"># teammates can then:</span>
+<span class="c-pmt">$</span> xskill search 技能名
+<span class="c-pmt">$</span> xskill download &lt;skill-id&gt;</code></pre>
+      <p data-i18n-html="w.up_vs"></p>
+      <h3 class="doc-subhead" data-i18n="w.notes">Notes</h3>
+      <ul class="doc-list">
+        <li data-i18n="w.up_n1"></li>
+        <li data-i18n="w.up_n2"></li>
+        <li data-i18n="w.up_n3"></li>
+      </ul>
+    </section>
+
+    <section id="import" class="doc-sec">
+      <h2>xskill import</h2>
+      <p data-i18n="w.im_one"></p>
+      <h3 class="doc-subhead" data-i18n="w.when">When to use it</h3>
+      <ul class="doc-list">
+        <li data-i18n="w.im_w1"></li>
+        <li data-i18n="w.im_w2"></li>
+      </ul>
+      <h3 class="doc-subhead" data-i18n="w.howcmd">How</h3>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill import ./my-skill
+<span class="c-pmt">$</span> xskill import ./skills-folder</code></pre>
+      <p data-i18n-html="w.im_vs"></p>
+      <h3 class="doc-subhead" data-i18n="w.notes">Notes</h3>
+      <ul class="doc-list">
+        <li data-i18n="w.im_n1"></li>
+        <li data-i18n="w.im_n2"></li>
+        <li data-i18n="w.im_n3"></li>
+      </ul>
+    </section>
+
+    <section id="rewrite" class="doc-sec">
+      <h2 data-i18n="w.rw_h">Hand-edit, then it uploads</h2>
+      <p data-i18n="w.rw_one"></p>
+      <h3 class="doc-subhead" data-i18n="w.when">When to use it</h3>
+      <ul class="doc-list">
+        <li data-i18n="w.rw_w1"></li>
+        <li data-i18n="w.rw_w2"></li>
+      </ul>
+      <h3 class="doc-subhead" data-i18n="w.howcmd">How</h3>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill status
+<span class="c-com"># then edit ~/.xskill/skill/&lt;name&gt;/SKILL.md and save</span></code></pre>
+      <p data-i18n-html="w.rw_vs"></p>
+      <h3 class="doc-subhead" data-i18n="w.notes">Notes</h3>
+      <ul class="doc-list">
+        <li data-i18n="w.rw_n1"></li>
+        <li data-i18n="w.rw_n2"></li>
+        <li data-i18n="w.rw_n3"></li>
+      </ul>
+    </section>
+
+    <section id="contribute" class="doc-sec">
+      <h2 data-i18n="w.co_h">Add a docs page</h2>
+      <p data-i18n-html="w.co_p"></p>
+      <ol class="doc-ol">
+        <li data-i18n-html="w.co_1"></li>
+        <li data-i18n-html="w.co_2"></li>
+        <li data-i18n-html="w.co_3"></li>
+        <li data-i18n-html="w.co_4"></li>
+        <li data-i18n-html="w.co_5"></li>
+      </ol>
+      <p data-i18n-html="w.co_repo"></p>
     </section>
 
     <section id="concepts" class="doc-sec">
@@ -184,8 +301,12 @@ embedding:
       <p data-i18n-html="w.cli_p"></p>
       <div class="cli-item"><code class="cli-sig">xskill serve [--host 0.0.0.0] [--port 8000] [--server]</code><p data-i18n-html="w.cli_serve"></p></div>
       <div class="cli-item"><code class="cli-sig">xskill registry &lt;add|remove|list&gt; [path] [--label LABEL]</code><p data-i18n-html="w.cli_registry"></p></div>
-      <div class="cli-item"><code class="cli-sig">xskill search &lt;traj|skill&gt; &lt;query&gt; [-k/--top-k N]</code><p data-i18n-html="w.cli_search"></p></div>
       <div class="cli-item"><code class="cli-sig">xskill connect [host:port] [--token TOKEN] [--name NAME] [--label LABEL] [--use-proxy] [--foreground]</code><p data-i18n-html="w.cli_connect"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill generate [--name NAME] PROMPT</code><p data-i18n-html="w.cli_generate"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill upload [--json] path</code><p data-i18n-html="w.cli_upload"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill import [--json] path</code><p data-i18n-html="w.cli_import"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill search QUERY [--download] [--team | --local]</code><p data-i18n-html="w.cli_search"></p></div>
+      <div class="cli-item"><code class="cli-sig">xskill download [--agent AGENT] [-y] skill_id</code><p data-i18n-html="w.cli_download"></p></div>
       <div class="cli-item"><code class="cli-sig">xskill status</code><p data-i18n-html="w.cli_status"></p></div>
       <div class="cli-item"><code class="cli-sig">xskill stop</code><p data-i18n-html="w.cli_stop"></p></div>
       <div class="cli-item"><code class="cli-sig">xskill start</code><p data-i18n-html="w.cli_start"></p></div>
@@ -238,7 +359,7 @@ embedding:
 <footer class="footer">
   <div class="footer__bar footer__bar--wiki">
     <span data-i18n="foot.copy">MIT © 370025263 — brewed under a palm tree.</span>
-    <span><a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a> · <a href="https://pypi.org/project/xskill/" target="_blank" rel="noopener">PyPI</a> · <a href="index.html" data-i18n="wiki.back">← Back to home</a></span>
+    <span><a href="https://github.com/SkillNerds/xskill-wiki" target="_blank" rel="noopener">Docs repo</a> · <a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a> · <a href="index.html#start" data-i18n="nav.getstarted">Get started</a> · <a href="index.html" data-i18n="wiki.back">← Back to home</a></span>
   </div>
 </footer>
 

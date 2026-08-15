@@ -293,22 +293,44 @@
   </div>
 </section>
 
-<!-- ===== CTA ===== -->
+<!-- ===== CTA / newcomer start ===== -->
 <section class="cta" id="start">
   <div class="cta__card">
     <span class="cta__sun">🌅</span>
-    <h2 data-i18n="cta.title">Distill your first Skill in two lines.</h2>
+    <h2 data-i18n="cta.title">Start here if you're new</h2>
+    <p class="cta__lede" data-i18n-html="cta.lede"></p>
     <div class="terminal">
       <div class="terminal__bar"><i></i><i></i><i></i><span>~/.xskill — bash</span></div>
       <pre class="terminal__body"><code><span class="c-com" data-i18n="cta.c1"># install — Python 3.9+</span>
-<span class="c-pmt">$</span> pip install xskill
-<span class="c-com" data-i18n="cta.c2"># writes ~/.xskill/config.yaml, then exits — add your model keys</span>
-<span class="c-pmt">$</span> xskill serve
-<span class="c-com" data-i18n="cta.c3"># run again: auto-detects your agents and starts watching</span>
+<span class="c-pmt">$</span> pip install -U xskill
+<span class="c-com" data-i18n="cta.c2"># no server of your own? join the public hub (replace YOUR_NAME)</span>
+<span class="c-pmt">$</span> xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 --name YOUR_NAME
+<span class="c-com" data-i18n="cta.c3"># or run a local copy: first run writes ~/.xskill/config.yaml</span>
 <span class="c-pmt">$</span> xskill serve</code></pre>
     </div>
+    <p class="cta__hint" data-i18n-html="cta.hint"></p>
+    <h3 class="cta__sub" data-i18n="cta.feat_h">Four commands people ask about first</h3>
+    <div class="start-grid">
+      <a class="start-card" href="wiki.html#generate">
+        <code>xskill generate</code>
+        <span data-i18n="cta.f_gen">Ask in one sentence; the server writes or rewrites a skill.</span>
+      </a>
+      <a class="start-card" href="wiki.html#upload">
+        <code>xskill upload</code>
+        <span data-i18n="cta.f_up">Share a finished skill folder so teammates can search it.</span>
+      </a>
+      <a class="start-card" href="wiki.html#import">
+        <code>xskill import</code>
+        <span data-i18n="cta.f_im">Bring an existing skill into xskill's own library.</span>
+      </a>
+      <a class="start-card" href="wiki.html#rewrite">
+        <code data-i18n="cta.f_rw_t">edit, then it uploads</code>
+        <span data-i18n="cta.f_rw">Change a skill file on your machine; the draft goes to the server by itself.</span>
+      </a>
+    </div>
     <div class="cta__btns">
-      <a class="btn btn--primary" href="wiki.html#quickstart"><span class="btn__shine"></span><span data-i18n="cta.read">Read the quickstart</span></a>
+      <a class="btn btn--primary" href="wiki.html#features"><span class="btn__shine"></span><span data-i18n="cta.read">Read the command guide</span></a>
+      <a class="btn btn--wood" href="wiki.html#contribute" data-i18n="cta.contrib">Add a docs page</a>
       <a class="btn btn--glass" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener" data-i18n="cta.star">★ Star on GitHub</a>
     </div>
   </div>
@@ -328,8 +350,8 @@
     </div>
     <nav class="footer__cols">
       <div><h4 data-i18n="foot.product">Product</h4><a href="#pipeline" data-i18n="nav.howitworks">How it works</a><a href="#concepts" data-i18n="nav.concepts">Concepts</a><a href="#team" data-i18n="nav.team">Team mode</a><a href="#public-hub" data-i18n="nav.hub">Public hub</a><a href="wiki.html" data-i18n="nav.wiki">Wiki</a></div>
-      <div><h4 data-i18n="foot.docs">Docs</h4><a href="wiki.html#quickstart" data-i18n="w.nav_quickstart">Quickstart</a><a href="wiki.html#cli" data-i18n="w.nav_cli">CLI reference</a><a href="wiki.html#config" data-i18n="w.nav_config">Configuration</a><a href="wiki.html#roadmap" data-i18n="w.nav_roadmap">Roadmap</a></div>
-      <div><h4 data-i18n="foot.community">Community</h4><a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a><a href="https://pypi.org/project/xskill/" target="_blank" rel="noopener">PyPI</a><a href="https://github.com/SkillNerds/xskill/releases/tag/v0.6.2" target="_blank" rel="noopener">Releases</a><a href="https://github.com/SkillNerds/xskill/blob/main/LICENSE" target="_blank" rel="noopener" data-i18n="w.nav_license">License</a></div>
+      <div><h4 data-i18n="foot.docs">Docs</h4><a href="#start" data-i18n="nav.getstarted">Get started</a><a href="wiki.html#features" data-i18n="w.nav_features">Common commands</a><a href="wiki.html#contribute" data-i18n="w.nav_contribute">Add a docs page</a><a href="wiki.html#cli" data-i18n="w.nav_cli">CLI reference</a></div>
+      <div><h4 data-i18n="foot.community">Community</h4><a href="https://github.com/SkillNerds/xskill-wiki" target="_blank" rel="noopener">Docs repo</a><a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a><a href="https://pypi.org/project/xskill/" target="_blank" rel="noopener">PyPI</a><a href="https://linux.do" target="_blank" rel="noopener">LINUX DO</a></div>
     </nav>
   </div>
   <div class="footer__bar">
