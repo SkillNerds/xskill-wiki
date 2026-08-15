@@ -1,1 +1,8 @@
 .serve.log
+deploy/.serve.pid
+deploy/.webhook.pid
+deploy/serve.log
+deploy/webhook.log
+deploy/deploy.log
+deploy/.deploy.lock
+._ops_probe
