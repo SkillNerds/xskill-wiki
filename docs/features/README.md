@@ -12,6 +12,7 @@
 - [generate](generate.md)
 - [upload](upload.md)
 - [import](import.md)
-- [手改自动上传](rewrite-auto-upload.md)
+- [search](search.md)
+- [rewrite-auto-upload](rewrite-auto-upload.md)
 
 网站上对应的入口：[https://xskill.wiki/wiki.html#features](https://xskill.wiki/wiki.html#features)

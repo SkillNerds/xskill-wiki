@@ -25,21 +25,23 @@ xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 
 
 ---
 
-## 新同学先记住这四件事
+## 新同学先记住这五件事
 
 | 你想做的事 | 用这个 |
 | --- | --- |
 | 用一句话，让系统马上写或改一条技能 | `xskill generate` |
 | 手里已经有一份技能文件夹，想让同事搜到 | `xskill upload` |
 | 把现成技能收进 xskill 自己的技能库，并装到助手里 | `xskill import` |
+| 在共享库中按关键词查找技能，获取编号或直接试用 | `xskill search` |
 | 直接改本机技能文件，改动自动传到服务器当草稿 | 手改即可，`connect` 常驻时会自动上传 |
 
-这四件事的完整说明在 [Wiki · 常用命令](https://xskill.wiki/wiki.html#features)，源文件在 [`docs/features/`](docs/features/)。
+这五件事的完整说明在 [Wiki · 常用命令](https://xskill.wiki/wiki.html#features)，源文件在 [`docs/features/`](docs/features/)。
 
 和相近命令不要混：
 
 - **upload** 是「放到共享目录，给人搜」。
 - **import** 是「收进正式技能库，带版本，并装到助手里」。
+- **search** 是「在共享库里按关键词查找技能与编号」。
 - **generate** 是「你说话，服务器代写」。
 - **手改自动上传** 不会立刻覆盖全队正式版，只作为下一轮自动改写的参考。
 
@@ -61,6 +63,7 @@ xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 
 - [`docs/features/generate.md`](docs/features/generate.md)
 - [`docs/features/upload.md`](docs/features/upload.md)
 - [`docs/features/import.md`](docs/features/import.md)
+- [`docs/features/search.md`](docs/features/search.md)
 - [`docs/features/rewrite-auto-upload.md`](docs/features/rewrite-auto-upload.md)
 
 产品代码在 <https://github.com/SkillNerds/xskill>。文档仓库只放网站和说明。
