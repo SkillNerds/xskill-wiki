@@ -588,6 +588,9 @@ section{position:relative}
 .doc-sec h2{font-size:27px;font-weight:800;margin-bottom:14px;padding-bottom:10px;border-bottom:2px dashed #f0d9ad;display:flex;align-items:center;gap:8px}
 .doc-subhead{font-size:21px;margin:20px 0 8px;color:var(--sea-deep)}
 .doc-sec p{color:var(--ink);font-size:16px;margin-bottom:14px}
+.doc-note{margin:16px 0 6px;padding:12px 16px;border-left:4px solid var(--sea-deep);border-radius:0 var(--radius-sm) var(--radius-sm) 0;background:#eaf6f7;font-size:14.5px;line-height:1.65}
+.doc-note b{color:var(--sea-deep)}
+.doc-note em{font-style:normal;font-weight:700;color:var(--coco-deep)}
 .doc-sec code{background:#fdeccb;color:var(--coco-deep);padding:2px 7px;border-radius:7px;font-size:14px;font-weight:600}
 .doc-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin:6px 0 6px}
 .doc-list li{position:relative;padding-left:28px;color:var(--ink);font-size:15.5px;line-height:1.55}

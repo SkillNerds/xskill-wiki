@@ -303,10 +303,12 @@
       <div class="terminal__bar"><i></i><i></i><i></i><span>~/.xskill — bash</span></div>
       <pre class="terminal__body"><code><span class="c-com" data-i18n="cta.c1"># install — Python 3.9+</span>
 <span class="c-pmt">$</span> pip install -U xskill
-<span class="c-com" data-i18n="cta.c2"># no server of your own? join the public hub (replace YOUR_NAME)</span>
+<span class="c-com" data-i18n="cta.c2"># 1. join public hub (fastest, no keys needed):</span>
 <span class="c-pmt">$</span> xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 --name YOUR_NAME
-<span class="c-com" data-i18n="cta.c3"># or run a local copy: first run writes ~/.xskill/config.yaml</span>
-<span class="c-pmt">$</span> xskill serve</code></pre>
+<span class="c-com" data-i18n="cta.c3"># 2. or run standalone locally (private, bring your own key):</span>
+<span class="c-pmt">$</span> xskill serve
+<span class="c-com" data-i18n="cta.c4"># 3. or host a team server:</span>
+<span class="c-pmt">$</span> xskill serve --server</code></pre>
     </div>
     <p class="cta__hint" data-i18n-html="cta.hint"></p>
     <h3 class="cta__sub" data-i18n="cta.feat_h">Five commands people ask about first</h3>

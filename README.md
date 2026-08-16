@@ -14,14 +14,23 @@ xskill 会看你的编程助手（Claude Code、Codex、Cursor 等）平时怎�
 
 一个人解决过的问题，可以变成全组都能用的技能。
 
-不想自己搭服务器时，可以接到公网实例：
+支持三种运行方式：
 
-```bash
-pip install -U xskill
-xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 --name 你的名字
-```
-
-把 `你的名字` 换成自己的用户名。连上之后它会在后台常驻：上传你的会话记录、把技能装到你正在用的助手里。
+1. **连公网实例（最快，免配大模型）**：
+   ```bash
+   pip install -U xskill
+   xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 --name 你的名字
+   ```
+2. **本机单机跑（数据不出机，自备大模型 Key）**：
+   ```bash
+   pip install -U xskill
+   xskill serve   # 首次自动生成 ~/.xskill/config.yaml，填好 key 再跑一次即可
+   ```
+3. **自建团队服务器（团队私有共享）**：
+   ```bash
+   xskill serve --server                        # 服务器上启动，打印接入 token
+   xskill connect <服务器IP:端口> --token <token> --name 你的名字  # 组员电脑连接
+   ```
 
 ---
 

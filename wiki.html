@@ -100,8 +100,15 @@
 
     <section id="quickstart" class="doc-sec">
       <h2 data-i18n="w.quickstart_h">Quickstart</h2>
+      <h3 class="doc-subhead" data-i18n="w.quickstart_optA_h"></h3>
+      <p data-i18n-html="w.quickstart_hub_lead"></p>
+      <pre class="code"><code><span class="c-pmt">$</span> pip install -U xskill
+<span class="c-pmt">$</span> xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 --name YOUR_NAME</code></pre>
+      <p class="doc-note" data-i18n-html="w.quickstart_token_note"></p>
+      <p data-i18n-html="w.quickstart_hub_note"></p>
+      <h3 class="doc-subhead" data-i18n="w.quickstart_optB_h"></h3>
       <p data-i18n-html="w.quickstart_p1"></p>
-      <pre class="code"><code><span class="c-pmt">$</span> pip install xskill          <span class="c-com"># Python 3.9+</span>
+      <pre class="code"><code><span class="c-pmt">$</span> pip install -U xskill       <span class="c-com"># Python 3.9+</span>
 <span class="c-pmt">$</span> xskill serve                <span class="c-com"># writes ~/.xskill/config.yaml, then exits</span></code></pre>
       <p data-i18n-html="w.quickstart_p2"></p>
       <pre class="code"><code>skill_dir: ~/.xskill/skill
@@ -112,14 +119,20 @@ llm:
   api_key:  YOUR_KEY
 
 embedding:
-  # DeepSeek has no embedding model; use DashScope / OpenAI / Ollama.
-  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
-  model:    text-embedding-v4
+  # LLM and embedding can share one DeepSeek endpoint; swap as needed.
+  base_url: https://api.deepseek.com
+  model:    deepseek-embedding
   api_key:  YOUR_KEY
   dim:      0</code></pre>
       <p data-i18n-html="w.quickstart_p3"></p>
-      <pre class="code"><code><span class="c-pmt">$</span> xskill registry add /path/to/trajectories</code></pre>
-      <p data-i18n-html="w.quickstart_hub"></p>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill serve                <span class="c-com"># start daemon & watcher</span>
+<span class="c-com"># optional: add an older trajectory archive</span>
+<span class="c-pmt">$</span> xskill registry add /path/to/trajectories</code></pre>
+      <h3 class="doc-subhead" data-i18n="w.quickstart_optC_h"></h3>
+      <p data-i18n-html="w.quickstart_optC_lead"></p>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill serve --server                        <span class="c-com"># on server: prints join token</span>
+<span class="c-pmt">$</span> xskill connect &lt;host:port&gt; --token &lt;token&gt; --name &lt;user-id&gt;</code></pre>
+      <p class="doc-note" data-i18n-html="w.quickstart_isolation"></p>
     </section>
 
     <section id="features" class="doc-sec">
