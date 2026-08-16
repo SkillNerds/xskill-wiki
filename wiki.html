@@ -249,6 +249,15 @@ embedding:
     <section id="how" class="doc-sec">
       <h2 data-i18n="w.how_h">How it works</h2>
       <p data-i18n-html="w.how_p"></p>
+      <ul class="doc-list">
+        <li><b data-i18n="w.how_s1_t"></b> — <span data-i18n-html="w.how_s1_p"></span></li>
+        <li><b data-i18n="w.how_s2_t"></b> — <span data-i18n-html="w.how_s2_p"></span></li>
+        <li><b data-i18n="w.how_s3_t"></b> — <span data-i18n-html="w.how_s3_p"></span></li>
+        <li><b data-i18n="w.how_s4_t"></b> — <span data-i18n-html="w.how_s4_p"></span></li>
+      </ul>
+      <p data-i18n-html="w.how_example"></p>
+      <p data-i18n-html="w.how_ver"></p>
+      <p data-i18n-html="w.how_see"></p>
     </section>
 
     <section id="arch" class="doc-sec">
@@ -280,7 +289,7 @@ embedding:
       <h2 data-i18n="w.team_h">Team mode</h2>
       <p data-i18n-html="w.team_p"></p>
       <pre class="code"><code><span class="c-pmt">$</span> xskill serve --server                        <span class="c-com"># prints a join token</span>
-<span class="c-pmt">$</span> xskill connect &lt;host:port&gt; --token &lt;token&gt; --name &lt;user-id&gt;</code></pre>
+<span class="c-pmt">$</span> xskill connect &lt;host:port&gt; --token *** --name &lt;user-id&gt;</code></pre>
       <ul class="doc-list">
         <li><b data-i18n="team.b1_t"></b> — <span data-i18n="team.b1_p"></span></li>
         <li><b data-i18n="team.b2_t"></b> — <span data-i18n="team.b2_p"></span></li>
@@ -288,6 +297,20 @@ embedding:
         <li><b data-i18n="team.b4_t"></b> — <span data-i18n="team.b4_p"></span></li>
         <li><b data-i18n="team.b5_t"></b> — <span data-i18n-html="team.b5_p"></span></li>
       </ul>
+      <h3 class="doc-subhead" data-i18n="w.team_loop_h"></h3>
+      <ul class="doc-list">
+        <li><b data-i18n="w.team_loop1_t"></b> — <span data-i18n-html="w.team_loop1_p"></span></li>
+        <li><b data-i18n="w.team_loop2_t"></b> — <span data-i18n-html="w.team_loop2_p"></span></li>
+        <li><b data-i18n="w.team_loop3_t"></b> — <span data-i18n-html="w.team_loop3_p"></span></li>
+        <li><b data-i18n="w.team_loop4_t"></b> — <span data-i18n-html="w.team_loop4_p"></span></li>
+      </ul>
+      <h3 class="doc-subhead" data-i18n="w.team_hub_h"></h3>
+      <p data-i18n-html="w.team_hub_p"></p>
+      <pre class="code"><code><span class="c-pmt">$</span> xskill search docker compose        <span class="c-com"># compact metadata + skill ID</span>
+<span class="c-pmt">$</span> xskill search docker --download    <span class="c-com"># installs into the 10-slot LRU</span>
+<span class="c-pmt">$</span> xskill download &lt;skill-id&gt; --agent claude-code --agent codex -y
+<span class="c-pmt">$</span> xskill upload ./my-skill           <span class="c-com"># whole team can search it right away</span></code></pre>
+      <p data-i18n-html="w.team_hub_p2"></p>
       <h3 class="doc-subhead" data-i18n="w.team_daemon_h">Persistent client</h3>
       <p data-i18n-html="w.team_daemon_p"></p>
       <pre class="code"><code><span class="c-pmt">$</span> xskill status
