@@ -30,7 +30,6 @@
       <li><a href="index.html" data-i18n="nav.home">Home</a></li>
       <li><a href="#quickstart" data-i18n="w.nav_quickstart">Quickstart</a></li>
       <li><a href="#features" data-i18n="w.nav_features">Common commands</a></li>
-      <li><a href="#contribute" data-i18n="w.nav_contribute">Add a docs page</a></li>
     </ul>
     <div class="nav__actions">
       <div class="lang" role="group" aria-label="language">
@@ -63,13 +62,19 @@
       <nav>
         <a href="#overview" data-i18n="w.nav_overview">Overview</a>
         <a href="#quickstart" data-i18n="w.nav_quickstart">Quickstart</a>
-        <a href="#features" data-i18n="w.nav_features">Common commands</a>
-        <a href="#generate">generate</a>
-        <a href="#upload">upload</a>
-        <a href="#import">import</a>
-        <a href="#search">search</a>
-        <a href="#rewrite" data-i18n="w.nav_rewrite">Hand edits</a>
-        <a href="#contribute" data-i18n="w.nav_contribute">Add a docs page</a>
+        <div class="wiki-toc__group" data-toc-fold>
+          <div class="wiki-toc__parent">
+            <a href="#features" data-i18n="w.nav_features">Common commands</a>
+            <button type="button" class="wiki-toc__toggle" aria-expanded="false" aria-controls="toc-features-sub" data-i18n-aria="wiki.toc_fold"></button>
+          </div>
+          <div class="wiki-toc__sub" id="toc-features-sub">
+            <a href="#generate">generate</a>
+            <a href="#upload">upload</a>
+            <a href="#import">import</a>
+            <a href="#search">search</a>
+            <a href="#rewrite" data-i18n="w.nav_rewrite">Hand edits</a>
+          </div>
+        </div>
         <a href="#concepts" data-i18n="w.nav_concepts">Concepts</a>
         <a href="#how" data-i18n="w.nav_how">How it works</a>
         <a href="#arch" data-i18n="w.nav_arch">Architecture</a>
@@ -80,6 +85,7 @@
         <a href="#roadmap" data-i18n="w.nav_roadmap">Roadmap</a>
         <a href="#news" data-i18n="w.nav_news">News</a>
         <a href="#license" data-i18n="w.nav_license">License</a>
+        <a href="#contribute" data-i18n="w.nav_contribute">Add a docs page</a>
       </nav>
       <a class="wiki-toc__back" href="index.html" data-i18n="wiki.back">← Back to home</a>
     </div>
@@ -263,19 +269,6 @@ embedding:
       </ul>
     </section>
 
-    <section id="contribute" class="doc-sec">
-      <h2 data-i18n="w.co_h">Add a docs page</h2>
-      <p data-i18n-html="w.co_p"></p>
-      <ol class="doc-ol">
-        <li data-i18n-html="w.co_1"></li>
-        <li data-i18n-html="w.co_2"></li>
-        <li data-i18n-html="w.co_3"></li>
-        <li data-i18n-html="w.co_4"></li>
-        <li data-i18n-html="w.co_5"></li>
-      </ol>
-      <p data-i18n-html="w.co_repo"></p>
-    </section>
-
     <section id="concepts" class="doc-sec">
       <h2 data-i18n="w.concepts_h">Concepts</h2>
       <p data-i18n="w.concepts_p">Five terms cover the whole system:</p>
@@ -419,6 +412,19 @@ embedding:
     <section id="license" class="doc-sec">
       <h2 data-i18n="w.license_h">License</h2>
       <p data-i18n="w.license_p">MIT © 370025263. See the LICENSE file in the repository.</p>
+    </section>
+
+    <section id="contribute" class="doc-sec">
+      <h2 data-i18n="w.co_h">Add a docs page</h2>
+      <p data-i18n-html="w.co_p"></p>
+      <ol class="doc-ol">
+        <li data-i18n-html="w.co_1"></li>
+        <li data-i18n-html="w.co_2"></li>
+        <li data-i18n-html="w.co_3"></li>
+        <li data-i18n-html="w.co_4"></li>
+        <li data-i18n-html="w.co_5"></li>
+      </ol>
+      <p data-i18n-html="w.co_repo"></p>
     </section>
 
   </article>

@@ -165,6 +165,7 @@
       "wiki.h": "xskill documentation",
       "wiki.sub": "Written for people who just arrived. Commands stay in English; the rest is plain language.",
       "wiki.toc": "On this page",
+      "wiki.toc_fold": "Show common commands",
       "wiki.back": "← Back to home",
       "wiki.edit": "Edit this wiki on GitHub →",
       "w.nav_overview": "Overview",
@@ -498,6 +499,7 @@
       "wiki.h": "xskill 文档",
       "wiki.sub": "写给刚来的人看。命令保持英文，其余用白话。",
       "wiki.toc": "本页目录",
+      "wiki.toc_fold": "展开常用命令",
       "wiki.back": "← 回首页",
       "wiki.edit": "在 GitHub 改这份文档 →",
       "w.nav_overview": "概览",
@@ -701,6 +703,10 @@
     document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
       const v = dict[el.getAttribute("data-i18n-html")];
       if (v != null) el.innerHTML = v;
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+      const v = dict[el.getAttribute("data-i18n-aria")];
+      if (v != null) el.setAttribute("aria-label", v);
     });
     const titleKey = document.body.getAttribute("data-title-key");
     if (titleKey && dict[titleKey]) document.title = dict[titleKey];

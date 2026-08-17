@@ -1,9 +1,32 @@
-/* xskill wiki — sidebar active-section highlight + section reveal */
+/* xskill wiki — sidebar active-section highlight + section reveal + TOC fold */
 (function () {
   "use strict";
   const links = Array.prototype.slice.call(document.querySelectorAll(".wiki-toc nav a"));
   const map = {};
   links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
+
+  function setFoldOpen(group, open) {
+    if (!group) return;
+    group.classList.toggle("is-open", open);
+    const btn = group.querySelector(".wiki-toc__toggle");
+    if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function openFoldForId(id) {
+    const a = map[id];
+    if (!a) return;
+    const sub = a.closest(".wiki-toc__sub");
+    if (sub) setFoldOpen(sub.closest("[data-toc-fold]"), true);
+  }
+
+  document.querySelectorAll("[data-toc-fold]").forEach(function (group) {
+    const btn = group.querySelector(".wiki-toc__toggle");
+    if (!btn) return;
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      setFoldOpen(group, !group.classList.contains("is-open"));
+    });
+  });
 
   const spy = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {
@@ -22,4 +45,9 @@
     });
   }, { threshold: 0.08 });
   document.querySelectorAll(".doc-sec").forEach(function (s) { s.classList.add("reveal"); rev.observe(s); });
+
+  openFoldForId((location.hash || "").replace(/^#/, ""));
+  window.addEventListener("hashchange", function () {
+    openFoldForId((location.hash || "").replace(/^#/, ""));
+  });
 })();
