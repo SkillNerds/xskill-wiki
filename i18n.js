@@ -348,7 +348,7 @@
       "w.news5": "<b>2026-05-12</b> — Claude Code, Codex, OpenCode supported; OpenClaw and Cursor connected.",
 
       "w.license_h": "License",
-      "w.license_p": "MIT © 370025263. See the LICENSE file in the repository."
+      "w.license_p": "MIT. Maintained by the <a href=\"https://skillnerds.club/membership\" target=\"_blank\" rel=\"noopener\">SkillNerds community</a>. See the LICENSE file in the repository."
     },
 
     zh: {
@@ -681,7 +681,7 @@
       "w.news5": "<b>2026-05-12</b> — Claude Code、Codex、OpenCode 支持；OpenClaw、Cursor 对接。",
 
       "w.license_h": "License",
-      "w.license_p": "MIT © 370025263。详见仓库内的 LICENSE 文件。"
+      "w.license_p": "MIT。由 <a href=\"https://skillnerds.club/membership\" target=\"_blank\" rel=\"noopener\">SkillNerds 社区</a> 维护。详见仓库内的 LICENSE 文件。"
     }
   };
 
