@@ -14,32 +14,43 @@ xskill 会看你的编程助手（Claude Code、Codex、Cursor 等）平时怎�
 
 一个人解决过的问题，可以变成全组都能用的技能。
 
-不想自己搭服务器时，可以接到公网实例：
+支持三种运行方式：
 
-```bash
-pip install -U xskill
-xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 --name 你的名字
-```
-
-把 `你的名字` 换成自己的用户名。连上之后它会在后台常驻：上传你的会话记录、把技能装到你正在用的助手里。
+1. **连公网实例（最快，免配大模型）**：
+   ```bash
+   pip install -U xskill
+   xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 --name 你的名字
+   ```
+2. **本机单机跑（数据不出机，自备大模型 Key）**：
+   ```bash
+   pip install -U xskill
+   xskill serve   # 首次自动生成 ~/.xskill/config.yaml，填好 key 再跑一次即可
+   ```
+3. **自建团队服务器（团队私有共享）**：
+   ```bash
+   xskill serve --server                        # 服务器上启动，打印接入 token
+   xskill connect <服务器IP:端口> --token <token> --name 你的名字  # 组员电脑连接
+   ```
 
 ---
 
-## 新同学先记住这四件事
+## 新同学先记住这五件事
 
 | 你想做的事 | 用这个 |
 | --- | --- |
 | 用一句话，让系统马上写或改一条技能 | `xskill generate` |
 | 手里已经有一份技能文件夹，想让同事搜到 | `xskill upload` |
 | 把现成技能收进 xskill 自己的技能库，并装到助手里 | `xskill import` |
+| 在共享库中按关键词查找技能，获取编号或直接试用 | `xskill search` |
 | 直接改本机技能文件，改动自动传到服务器当草稿 | 手改即可，`connect` 常驻时会自动上传 |
 
-这四件事的完整说明在 [Wiki · 常用命令](https://xskill.wiki/wiki.html#features)，源文件在 [`docs/features/`](docs/features/)。
+这五件事的完整说明在 [Wiki · 常用命令](https://xskill.wiki/wiki.html#features)，源文件在 [`docs/features/`](docs/features/)。
 
 和相近命令不要混：
 
 - **upload** 是「放到共享目录，给人搜」。
 - **import** 是「收进正式技能库，带版本，并装到助手里」。
+- **search** 是「在共享库里按关键词查找技能与编号」。
 - **generate** 是「你说话，服务器代写」。
 - **手改自动上传** 不会立刻覆盖全队正式版，只作为下一轮自动改写的参考。
 
@@ -61,6 +72,7 @@ xskill connect https://hub.xskill.wiki --token dd7f641c16ced6d1db43e754055fd2c8 
 - [`docs/features/generate.md`](docs/features/generate.md)
 - [`docs/features/upload.md`](docs/features/upload.md)
 - [`docs/features/import.md`](docs/features/import.md)
+- [`docs/features/search.md`](docs/features/search.md)
 - [`docs/features/rewrite-auto-upload.md`](docs/features/rewrite-auto-upload.md)
 
 产品代码在 <https://github.com/SkillNerds/xskill>。文档仓库只放网站和说明。

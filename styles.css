@@ -580,6 +580,16 @@ section{position:relative}
 .wiki-toc__card nav a{padding:7px 12px;border-radius:10px;font-weight:700;font-size:14px;color:var(--ink-soft);border-left:3px solid transparent;transition:.15s}
 .wiki-toc__card nav a:hover{background:rgba(58,167,179,.1);color:var(--sea-deep)}
 .wiki-toc__card nav a.is-active{background:linear-gradient(90deg,#fff3e2,transparent);color:var(--coral-deep);border-left-color:var(--coral)}
+.wiki-toc__group{display:flex;flex-direction:column}
+.wiki-toc__parent{display:flex;align-items:center;gap:2px}
+.wiki-toc__parent>a{flex:1;min-width:0}
+.wiki-toc__toggle{flex:0 0 28px;width:28px;height:28px;border:0;padding:0;border-radius:8px;background:transparent;color:var(--ink-soft);cursor:pointer;line-height:1}
+.wiki-toc__toggle::before{content:"";display:block;width:0;height:0;margin:0 auto;border-style:solid;border-width:5px 0 5px 7px;border-color:transparent transparent transparent currentColor;transition:transform .15s}
+.wiki-toc__toggle:hover{background:rgba(58,167,179,.12);color:var(--sea-deep)}
+.wiki-toc__group.is-open .wiki-toc__toggle::before{transform:rotate(90deg)}
+.wiki-toc__sub{display:none;flex-direction:column;gap:1px;padding:2px 0 4px}
+.wiki-toc__group.is-open .wiki-toc__sub{display:flex}
+.wiki-toc__sub a{padding-left:22px;font-size:13px;font-weight:600}
 .wiki-toc__back{display:block;margin-top:14px;padding-top:12px;border-top:1px dashed #e9d4a6;font-weight:700;font-size:14px;color:var(--sea-deep)}
 .wiki-toc__back:hover{color:var(--coral-deep)}
 
@@ -588,6 +598,9 @@ section{position:relative}
 .doc-sec h2{font-size:27px;font-weight:800;margin-bottom:14px;padding-bottom:10px;border-bottom:2px dashed #f0d9ad;display:flex;align-items:center;gap:8px}
 .doc-subhead{font-size:21px;margin:20px 0 8px;color:var(--sea-deep)}
 .doc-sec p{color:var(--ink);font-size:16px;margin-bottom:14px}
+.doc-note{margin:16px 0 6px;padding:12px 16px;border-left:4px solid var(--sea-deep);border-radius:0 var(--radius-sm) var(--radius-sm) 0;background:#eaf6f7;font-size:14.5px;line-height:1.65}
+.doc-note b{color:var(--sea-deep)}
+.doc-note em{font-style:normal;font-weight:700;color:var(--coco-deep)}
 .doc-sec code{background:#fdeccb;color:var(--coco-deep);padding:2px 7px;border-radius:7px;font-size:14px;font-weight:600}
 .doc-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin:6px 0 6px}
 .doc-list li{position:relative;padding-left:28px;color:var(--ink);font-size:15.5px;line-height:1.55}
@@ -629,6 +642,8 @@ section{position:relative}
   .wiki-toc__card nav{flex-flow:row wrap}
   .wiki-toc__card nav a{border-left:none;border-bottom:3px solid transparent}
   .wiki-toc__card nav a.is-active{border-left:none;border-bottom-color:var(--coral)}
+  .wiki-toc__group{flex:1 1 100%}
+  .wiki-toc__sub{flex-flow:row wrap}
   /* tables can be wider than a phone (nowrap code cells); let them scroll inside their own box instead of being clipped by body{overflow-x:hidden} */
   .doc-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
 }
