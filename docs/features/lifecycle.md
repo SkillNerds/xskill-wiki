@@ -24,9 +24,8 @@ Watcher 会周期性扫描轨迹目录，并把拆分、索引、聚类、编辑
 
 ## 三个分数不要混用
 
-- `weightscore`：聚类阶段给 AtomTask 的贡献分，范围通常为 1 到 10。它决定候选是否值得整理。
-- `ux_score`：Skill 被实际使用后的体验分。它用于比较 `main` 和 `staging`。
-- 候选累计达到阈值，只会触发 SkillEdit，不等于已经发布。
+- `weightscore`：聚类阶段给 AtomTask 的贡献分，通常为 0 到 10。候选累计达到默认阈值 10 后，才会触发 SkillEdit；这不等于已经发布。
+- `ux_score`：TaskAgent 拆分时就可能给 Atom 标注的体验分；灰度裁决使用 `.ux_scores.jsonl` 中按 `(atom_id, skill_name, side)` 去重后的记录。
 
 ## baby、main、staging
 
@@ -38,26 +37,33 @@ Watcher 会周期性扫描轨迹目录，并把拆分、索引、聚类、编辑
 | `main` | 当前正式版本 | 新一轮编辑先进入 `staging` |
 | `staging` | 等待灰度比较的候选版本 | promote 合并，或 reject/discard |
 
-新 Skill 刚建出来时先放在 `baby`。第一次整理出可用内容后，SkillEditAgent 用
-`commit_baby` 把它送进 `main`。以后再有新的整理结果，就从 `main` 生成
-`staging`，交给真实流量试一轮。这个版本只在 `staging` 暂住：表现够好就
-`promote` 回 `main`，表现不好就 `reject/discard`。
+新 Skill 刚建出来时先放在 `baby`。SkillEditAgent 每处理一批材料，会用
+`commit_baby` 做一次 checkpoint；候选材料消化完后，框架再用
+`graduate_baby_to_main`（底层操作是 `commit_baby_to_main_branch`）让它正式进入
+`main`。以后再有新的整理结果，就从 `main` 生成 `staging`，交给真实流量试一轮。
+这个版本只在 `staging` 暂住：表现够好就 `promote` 回 `main`，表现不好就
+`reject/discard`。
 
 创建 `staging` 前，`main` 至少要有一条真实使用的 `side=main` UX 记录。否则没有基线，灰度比较没有意义。
+`staging` 存在时，普通 SkillEdit 会先 hold；只有 jam 的三个条件同时满足（候选版本已存在至少 30 分钟、最近一次 UX 分数已 plateau 至少 10 分钟、候选 `weightscore` 累计至少 50）才会强制推进。
 
 ## 灰度如何裁决
 
-默认约 20% 的轨迹进入 `staging`。`pick_side()` 用 `sha256(traj_id + ":" + skill_name)` 做稳定分流，同一条轨迹不会在对话中途换边。
+默认目标约 20% 的轨迹进入 `staging`。Team 模式下，普通 client 主路径由
+`CanaryRouter.assign` 按当前实际比例与目标比例的差值选择更需要补样本的一侧，
+并保持 sticky；两侧误差打平时才使用 `_balanced_side` / `pick_side()` 的稳定哈希
+兜底。单机或高基数路径仍可能直接使用 `pick_side()`，因此同一条轨迹在同一 Skill
+上不会在对话中途换边。
 
 默认规则如下：
 
 | 条件 | 结果 |
 | --- | --- |
-| 两侧各至少 5 条有效 UX 分数，且 `staging_avg >= main_avg` | promote，合并到 `main` |
+| 当前这对 `main/staging` `commit_sha` 两侧各至少 5 条有效 UX 分数，且 `staging_avg >= main_avg` | promote，合并到 `main` |
 | 两侧样本齐全，但 `staging_avg < main_avg` | reject，丢弃候选版本 |
 | `staging` 保留 14 天仍未凑齐样本 | `timeout_discarded` |
 
-UX 记录写在 Skill 的 `.ux_scores.jsonl` 中，至少包含 `atom_id`、`side`、`commit_sha`、`score` 和时间。相同的 `(atom_id, skill_name, side)` 只记一次。
+UX 记录写在 Skill 的 `.ux_scores.jsonl` 中，至少包含 `atom_id`、`side`、`commit_sha`、`score` 和时间。相同的 `(atom_id, skill_name, side)` 只记一次。上表是未开启模型分桶时的默认规则；开启模型分桶后，样本门槛和均值算法会随分桶配置变化。
 
 ## 一个实际例子
 
@@ -66,7 +72,7 @@ Alice 用 Codex 排查数据库迁移失败：
 1. Watcher 发现新轨迹，TaskAgent 拆出“定位版本”“清理失败状态”“重新执行迁移”等 AtomTask。
 2. ClusterAgent 找到 `database-migration` Skill，并把这些 Atom 写入 `.candidates.yml`。
 3. 候选 `weightscore` 累计达到阈值后，SkillEditAgent 读取原始片段和现有 `SKILL.md`，整理出可复用步骤。
-4. 如果是新 Skill，提交走 `baby -> main`；如果已有正式版本，走 `main -> staging`。
+4. 如果是新 Skill，先做 `baby` checkpoint，候选消化完后再毕业到 `main`；如果已有正式版本，走 `main -> staging`。
 5. 灰度期间分别记录两侧 UX 分数，样本和均值满足规则后再决定是否 promote。
 
 ## 两个容易混淆的入口
@@ -93,7 +99,7 @@ xskill generate "创建一个排查 Python 内存泄漏的 Skill"
 | AtomTask 如何保存 | `src/xskill/pipeline/atom.py` |
 | 聚类和候选如何写入 | `src/xskill/agents/task_cluster_agent.py`、`src/xskill/skill/candidates.py` |
 | 何时触发 SkillEdit | `src/xskill/agents/skill_edit_agent.py` 的 `maybe_run` |
-| 分支如何推进 | `src/xskill/skill/git.py` 的 `commit_baby_to_main_branch`、`commit_to_staging_branch` |
-| 灰度如何裁决 | `src/xskill/canary.py` 的 `pick_side`、`check_and_decide` |
+| 分支如何推进 | `src/xskill/skill/git.py` 的 `commit_baby`、`graduate_baby_to_main`、`commit_baby_to_main_branch`、`commit_to_staging_branch` |
+| 灰度如何分流和裁决 | `src/xskill/canary.py` 的 `CanaryRouter.assign`、`_balanced_side`、`pick_side`、`check_and_decide` |
 
 排查时最常见的三个误区：不要把 `weightscore` 当成 UX 分数；不要把达到候选阈值当成发布；不要把系统 `staging` 和 `user-staging/<client_id>` 当成同一条分支。
