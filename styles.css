@@ -630,6 +630,34 @@ section{position:relative}
 .doc-figure{margin:6px 0 4px;background:#fff;border:1px solid #f0d9ad;border-radius:var(--radius-sm);padding:16px;text-align:center;overflow-x:auto}
 .doc-figure img{max-width:100%;height:auto;border-radius:8px}
 
+/* ---- Skill lifecycle ---- */
+.lifecycle-flow{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 0;margin:24px 0 30px;padding:0}
+.lifecycle-flow li{position:relative;min-width:0;text-align:center;padding:0 24px}
+.lifecycle-flow li:nth-child(4){grid-column:3}
+.lifecycle-flow li:nth-child(5){grid-column:2;grid-row:2}
+.lifecycle-flow li:nth-child(6){grid-column:1;grid-row:2}
+.lifecycle-flow li:nth-child(1)::after,.lifecycle-flow li:nth-child(2)::after{content:"→";position:absolute;right:-8px;top:11px;color:var(--coral-deep);font-family:var(--font-display);font-size:20px;font-weight:800}
+.lifecycle-flow li:nth-child(3)::after{content:"↓";position:absolute;left:50%;bottom:-27px;transform:translateX(-50%);color:var(--coral-deep);font-family:var(--font-display);font-size:19px;font-weight:800}
+.lifecycle-flow li:nth-child(4)::after,.lifecycle-flow li:nth-child(5)::after{content:"←";position:absolute;left:-8px;top:11px;color:var(--coral-deep);font-family:var(--font-display);font-size:20px;font-weight:800}
+.lifecycle-flow span{display:grid;place-items:center;width:36px;height:36px;margin:0 auto 9px;border:2px solid var(--sea);border-radius:50%;background:#eaf6f7;color:var(--sea-deep);font-family:var(--font-display);font-weight:800;box-shadow:var(--inset-top)}
+.lifecycle-flow b{display:block;color:var(--coco-deep);font-family:var(--font-display);font-size:15px;line-height:1.3}
+.lifecycle-flow small{display:block;max-width:180px;margin:5px auto 0;color:var(--ink-soft);font-size:13px;line-height:1.45}
+.lifecycle-branches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:10px 0 16px;border-top:2px solid var(--sand-line);border-bottom:2px solid var(--sand-line)}
+.lifecycle-branches>div{position:relative;min-width:0;padding:18px 30px 18px 2px}
+.lifecycle-branches>div:not(:last-child)::after{content:"→";position:absolute;right:8px;top:24px;color:var(--coral-deep);font-family:var(--font-display);font-size:21px;font-weight:800}
+.lifecycle-branches code{display:inline-block;margin-bottom:8px}
+.lifecycle-branches b,.lifecycle-branches small{display:block}
+.lifecycle-branches b{color:var(--coral-deep);font-family:var(--font-display);font-size:15px}
+.lifecycle-branches small{margin-top:4px;color:var(--ink-soft);font-size:13px;line-height:1.45}
+.canary-outcomes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:18px 0 20px}
+.canary-outcome{min-width:0;padding:13px 4px 0;border-top:4px solid var(--sand-line)}
+.canary-outcome--win{border-top-color:#45b87a}
+.canary-outcome--lose{border-top-color:var(--coral)}
+.canary-outcome--wait{border-top-color:#d6a94c}
+.canary-outcome b,.canary-outcome small{display:block}
+.canary-outcome b{font-family:var(--font-display);font-size:15px;color:var(--coco-deep)}
+.canary-outcome small{margin-top:5px;color:var(--ink-soft);font-size:13px;line-height:1.45}
+
 .footer__bar--wiki{padding-top:0;border-top:none}
 .footer__bar--wiki a{color:#7fd5d0}
 .footer__bar--wiki a:hover{color:#fff}
@@ -657,4 +685,14 @@ section{position:relative}
   .nav__actions{gap:8px}
   .nav__actions .btn--mini{display:none} /* hero already has Get Started */
   .board__table td:nth-child(3),.board__table th:nth-child(3){display:none} /* hide ingest path on phones */
+  .lifecycle-flow{grid-template-columns:1fr;gap:0;margin-left:4px}
+  .lifecycle-flow li,.lifecycle-flow li:nth-child(4),.lifecycle-flow li:nth-child(5),.lifecycle-flow li:nth-child(6){display:grid;grid-column:1;grid-row:auto;grid-template-columns:42px 1fr;text-align:left;padding:0 0 24px 0}
+  .lifecycle-flow li:nth-child(1)::after,.lifecycle-flow li:nth-child(2)::after,.lifecycle-flow li:nth-child(3)::after,.lifecycle-flow li:nth-child(4)::after,.lifecycle-flow li:nth-child(5)::after{content:"↓";left:9px;right:auto;top:38px;bottom:auto;transform:none;font-size:16px}
+  .lifecycle-flow span{grid-row:1/3;margin:0}
+  .lifecycle-flow b{align-self:end;font-size:15px}
+  .lifecycle-flow small{max-width:none;margin:2px 0 0;font-size:13px}
+  .lifecycle-branches{grid-template-columns:1fr}
+  .lifecycle-branches>div{padding:15px 2px 28px}
+  .lifecycle-branches>div:not(:last-child)::after{content:"↓";left:8px;right:auto;top:auto;bottom:3px;font-size:17px}
+  .canary-outcomes{grid-template-columns:1fr;gap:14px}
 }
