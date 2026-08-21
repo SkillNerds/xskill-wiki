@@ -590,6 +590,7 @@ section{position:relative}
 .wiki-toc__sub{display:none;flex-direction:column;gap:1px;padding:2px 0 4px}
 .wiki-toc__group.is-open .wiki-toc__sub{display:flex}
 .wiki-toc__sub a{padding-left:22px;font-size:13px;font-weight:600}
+.wiki-toc__chap{display:block;padding:6px 0 2px 10px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--sea-deep,#1a6b5c);opacity:.7;pointer-events:none}
 .wiki-toc__back{display:block;margin-top:14px;padding-top:12px;border-top:1px dashed #e9d4a6;font-weight:700;font-size:14px;color:var(--sea-deep)}
 .wiki-toc__back:hover{color:var(--coral-deep)}
 
