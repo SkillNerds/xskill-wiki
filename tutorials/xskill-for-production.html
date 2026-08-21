@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>xskill for Production Agent Services · xskill tutorials 🥥</title>
+<title>xskill for Production · xskill tutorials 🥥</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
@@ -79,17 +79,29 @@
       <!-- ===== ENGLISH ===== -->
       <div data-lang-content="en" class="is-visible">
         <h1>xskill for Production Agent Services</h1>
-        <p class="tut-subtitle">Deploy xskill to improve consistency, reduce token costs, and enable self-evolving skills for customer-facing agents.</p>
+        <p class="tut-subtitle">Consistency, lower token cost, and skills that improve on their own — for agents that run thousands of times a day.</p>
 
-        <p>This tutorial will cover deploying xskill to improve consistency, reduce token costs, and enable self-evolving skills for customer-facing agent services. Coming soon.</p>
+        <p>In this upcoming tutorial, we'll walk you through running xskill behind a customer-facing agent. We'll start with the deployment itself — where the hub lives, how sessions reach it, and what you should keep out of a trajectory before it ever leaves your service.</p>
+
+        <p>Then we'll get to the part that makes production different from personal use: the promotion path. A candidate Skill starts in staging, sees a controlled slice of live traffic, and gets a UX score alongside the incumbent. We'll cover how to set the traffic share, how many samples you need before the result means anything, and how to stop a bad version from being promoted.</p>
+
+        <p>Finally we'll close the loop back to chapter A and actually measure it: hit rate and cost per session before and after a Skill lands, so the claim that this saves money is something you can check rather than take on trust.</p>
+
+        <p class="doc-note">Coming soon. The <a href="../wiki.html">Wiki</a> covers hub setup and team sharing in the meantime.</p>
       </div>
 
       <!-- ===== CHINESE ===== -->
       <div data-lang-content="zh">
         <h1>面向生产 Agent 服务的 xskill</h1>
-        <p class="tut-subtitle">部署 xskill 来提升一致性、降低 token 成本，并为面向客户的 Agent 服务启用自进化技能。</p>
+        <p class="tut-subtitle">一致性、更低的 token 成本，以及会自己变好的技能 —— 给那些每天要跑几千次的 Agent。</p>
 
-        <p>这篇教程将涵盖如何部署 xskill 来提升一致性、降低 token 成本，并为面向客户的 Agent 服务启用自进化的技能体系。即将推出。</p>
+        <p>在接下来这篇教程里，我们会带你把 xskill 跑在一个面向客户的 Agent 后面。先从部署本身讲起：hub 放在哪、会话怎么送达、以及一条轨迹在离开你的服务之前有哪些东西不该带出去。</p>
+
+        <p>然后进入生产和个人使用真正不同的那一块：晋升路径。一个候选 Skill 先进 staging，拿到一小部分受控的真实流量，和现役版本一起接受 UX 评分。我们会讲怎么设这个流量比例、样本要攒到多少结果才算数，以及怎么拦住一个不该被晋升的版本。</p>
+
+        <p>最后我们把回路接回 A 章，把效果真的量出来：一个 Skill 上线前后的命中率和单次会话成本。这样「它能省钱」这句话就是你可以自己核对的东西，而不是需要你相信的东西。</p>
+
+        <p class="doc-note">即将推出。在那之前，<a href="../wiki.html">文档区</a>里有 hub 搭建和团队共享的内容。</p>
       </div>
 
       <div class="tut-nav-footer">
@@ -117,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function() {
       {left: "$$", right: "$$", display: true},
       {left: "$", right: "$", display: false}
     ],
+    ignoredClasses: ["tut-code"],
     throwOnError: false
   });
 });

@@ -79,35 +79,73 @@
       <!-- ===== ENGLISH ===== -->
       <div data-lang-content="en" class="is-visible">
         <h1>Skill Use Cases</h1>
-        <p class="tut-subtitle">Three scenarios where Skills deliver real value — from solo hacking to production agent services.</p>
+        <p class="tut-subtitle">Skills sound nice in theory. But where do they actually help? Here are three scenarios where they shine.</p>
 
-        <h2>1. Personal Projects</h2>
-        <p>Skills serve as scaffolding for your own work: debugging patterns, feature development checklists, deployment procedures. Instead of re-explaining the same context every session, your agent loads the relevant Skill and picks up where you left off.</p>
+        <h2>1. Your Own Projects</h2>
+        <p>You have a deploy step that has to run before the migration, and a log file that lives somewhere nobody would guess. Every few weeks you come back to this project and re-teach your agent both facts, usually after it gets one of them wrong.</p>
+
+        <p>A Skill turns that repetition into a one-time cost. The next session opens with the project's quirks already loaded — build order, the environment variable that must be set, the test that is flaky and can be ignored. You start at turn five instead of turn one.</p>
+
+        <p>The value here is not sophistication, it's continuity. Solo work generates a surprising amount of hard-won trivia, and almost all of it currently dies in a scrollback buffer.</p>
 
         <h2>2. Shared Workflows</h2>
-        <p>Project-agnostic processes — CI/CD pipelines, code review standards, formatting conventions — that multiple team members reuse. One person figures out the right approach, and the Skill makes it available to everyone without a wiki page nobody reads.</p>
+        <p>One person on the team figures out how to get the release pipeline to behave: which check to re-run rather than debug, how to word a migration PR so review doesn't stall, the two lint rules everyone disables for the wrong reasons.</p>
+
+        <p>Normally this goes into a wiki page that gets read once, at onboarding, and is stale in a month. As a Skill it goes somewhere the agent looks by itself, so the second person to hit the problem doesn't have to know it was ever solved.</p>
+
+        <p>That changes the economics of writing things down. You aren't documenting for a hypothetical future reader who has to remember to search — you're teaching a tool that's already in the loop.</p>
 
         <h2>3. Production Agent Services</h2>
-        <p>Customer-facing agents that run thousands of times daily need consistency, low token cost, and traceability. Skills give production agents a stable instruction set that evolves through measured A/B testing rather than ad-hoc prompt edits.</p>
+        <p>A customer-facing agent runs thousands of times a day, and the same three tasks account for most of that traffic. Every one of those runs currently rediscovers the procedure from the system prompt and whatever the model happens to recall.</p>
 
-        <p class="doc-note">Coming soon: detailed walkthroughs for each scenario.</p>
+        <p>Skills give those hot paths a fixed, reviewed instruction set. Three things get better at once: consistency, because runs stop diverging on the same task; cost, because a task that used to need eight turns of exploration needs four; and traceability, because when behaviour changes you can point at the version that changed it.</p>
+
+        <p>And because versions are scored on real traffic rather than argued about in review, improving a production prompt stops being a matter of taste.</p>
+
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ Which one is you?</strong>
+          If you're in scenario 1, the win is time. In scenario 2, it's knowledge that stops evaporating. In scenario 3, it's measurable cost and consistency. The mechanism is the same; only the payoff you notice first is different.
+        </div>
+
+        <p class="doc-note">Coming soon: detailed walkthroughs for each scenario, with the trajectories and Skills they produced.</p>
+
+        <p>So Skills are worth having. The remaining question is who writes them — and chapter C is about not having to.</p>
       </div>
 
       <!-- ===== CHINESE ===== -->
       <div data-lang-content="zh">
         <h1>Skill 使用场景</h1>
-        <p class="tut-subtitle">三种 Skill 带来实际价值的场景——从个人开发到生产级 Agent 服务。</p>
+        <p class="tut-subtitle">Skill 听起来不错，但它到底在哪些地方真的有用？下面三个场景是它最出彩的地方。</p>
 
-        <h2>1. 个人项目</h2>
-        <p>Skill 充当你个人工作的脚手架：调试模式、功能开发清单、部署流程。不用每次会话都重复解释相同的上下文，agent 加载相关 Skill 就能从上次的进度继续。</p>
+        <h2>1. 你自己的项目</h2>
+        <p>你有个部署步骤必须跑在数据库迁移之前，还有个日志文件放在谁都猜不到的地方。每隔几周回到这个项目，你就得把这两件事重新教一遍 Agent，而且通常是在它已经踩错一个之后。</p>
 
-        <h2>2. 共享工作流</h2>
-        <p>与具体项目无关的流程——CI/CD 管线、代码评审标准、格式规范——可以被多个团队成员复用。一个人摸索出正确的做法，Skill 让所有人都能用上，而不是靠一篇没人看的 wiki 页面。</p>
+        <p>Skill 把这种重复变成一次性成本。下一次开会话时，项目的那些怪癖已经加载好了 —— 构建顺序、那个必须设的环境变量、那个时不时挂但可以忽略的测试。你是从第五轮开始，而不是第一轮。</p>
+
+        <p>这里的价值不在于多高深，而在于连续性。一个人干活会积累出数量惊人的、来之不易的琐碎知识，而这些知识现在几乎全部死在了滚动缓冲区里。</p>
+
+        <h2>2. 共享的工作流</h2>
+        <p>团队里有个人摸清了怎么让发布流水线听话：哪个检查应该直接重跑而不是去 debug、迁移类 PR 的描述怎么写评审才不会卡住、哪两条 lint 规则大家总是因为错误的理由关掉。</p>
+
+        <p>通常这些会写进一个 wiki 页面，在入职时被读一次，一个月后就过期了。做成 Skill，它就落在 Agent 自己会去看的地方，于是第二个撞上同样问题的人，根本不需要知道这个问题曾经被解决过。</p>
+
+        <p>这会改变「写下来」这件事的性价比。你不是在为一个假想中的、还得记得去搜索的未来读者写文档，而是在教一个本来就在回路里的工具。</p>
 
         <h2>3. 生产 Agent 服务</h2>
-        <p>面向客户的 Agent 每天运行数千次，需要一致性、低 token 成本和可追溯性。Skill 给生产 Agent 提供一套稳定的指令集，通过可量化的 A/B 测试进化，而不是靠临时改 prompt。</p>
+        <p>一个面向客户的 Agent 每天跑几千次，而其中大部分流量集中在同样的三类任务上。现在每一次运行都在靠系统提示词加模型的临场记忆，把流程重新摸索一遍。</p>
 
-        <p class="doc-note">即将推出：每种场景的详细实操指南。</p>
+        <p>Skill 给这些高频路径一套固定的、审过的指令集。三件事同时变好：一致性，因为同一个任务的多次运行不再各走各的；成本，因为原来需要八轮探索的任务现在四轮就够；可追溯性，因为行为变了你能指出是哪个版本改的。</p>
+
+        <p>而且因为版本是拿真实流量打分的，不是在评审里争出来的，改进生产 prompt 这件事就不再是口味问题。</p>
+
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ 你是哪一种？</strong>
+          在场景一，你先感受到的收益是时间；场景二，是知识不再蒸发；场景三，是可度量的成本和一致性。机制是同一套，只是你最先注意到的那份好处不一样。
+        </div>
+
+        <p class="doc-note">即将推出：三个场景的详细实操走查，附上产出这些 Skill 的原始轨迹。</p>
+
+        <p>所以 Skill 是值得有的。剩下的问题是谁来写它 —— 而 C 章要讲的，就是怎么不用自己写。</p>
       </div>
 
       <div class="tut-nav-footer">
@@ -135,6 +173,7 @@ document.addEventListener("DOMContentLoaded", function() {
       {left: "$$", right: "$$", display: true},
       {left: "$", right: "$", display: false}
     ],
+    ignoredClasses: ["tut-code"],
     throwOnError: false
   });
 });

@@ -79,73 +79,201 @@
       <!-- ===== ENGLISH ===== -->
       <div data-lang-content="en" class="is-visible">
         <h1>How Cache Influences Your Budget</h1>
-        <p class="tut-subtitle">The three-part cost formula for multi-turn agent sessions — and an interactive calculator to see the numbers yourself.</p>
+        <p class="tut-subtitle">You've learned that cached tokens are cheap and uncached tokens are expensive. Now let's build the exact formula for how much a multi-turn agent session costs — and see the numbers with real DeepSeek pricing.</p>
 
-        <h2>The Cost Formula</h2>
-        <p>For an agent session with $n$ turns, the total cost $P_n$ decomposes into three terms:</p>
+        <h2>The Three Prices</h2>
+        <p>Every token you send or receive is billed at one of three rates. Providers publish all three, and they are far apart:</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>Symbol</th><th>Applies to</th><th>Why it's priced that way</th></tr></thead>
+          <tbody>
+            <tr><td><strong>P<sub>cr</sub></strong></td><td>Input tokens that hit the cache</td><td>The GPU work was already done on an earlier request</td></tr>
+            <tr><td><strong>P<sub>i</sub></strong></td><td>Input tokens the model sees for the first time</td><td>Full attention pass required</td></tr>
+            <tr><td><strong>P<sub>o</sub></strong></td><td>Every token the model generates</td><td>One forward pass per token, generated one at a time</td></tr>
+          </tbody>
+        </table>
+
+        <p>Here are DeepSeek's actual numbers, in ¥ per million tokens:</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>Model</th><th>Time slot</th><th>P<sub>cr</sub></th><th>P<sub>i</sub></th><th>P<sub>o</sub></th></tr></thead>
+          <tbody>
+            <tr><td>deepseek-v4-flash</td><td>Off-peak</td><td>0.05</td><td>1.50</td><td>4.50</td></tr>
+            <tr><td>deepseek-v4-flash</td><td>Peak</td><td>0.10</td><td>3.00</td><td>9.00</td></tr>
+            <tr><td>deepseek-v4-pro</td><td>Off-peak</td><td>0.15</td><td>4.50</td><td>13.50</td></tr>
+            <tr><td>deepseek-v4-pro</td><td>Peak</td><td>0.30</td><td>9.00</td><td>27.00</td></tr>
+          </tbody>
+        </table>
+
+        <p>Two ratios are worth memorising: fresh input costs 30× a cache read, and output costs 90×. Every design decision you make about agent architecture is really a decision about which bucket your tokens land in.</p>
+
+        <p>Now let's build the bill one piece at a time.</p>
+
+        <h2>Part 1: Cache Reads</h2>
+        <p>The system prompt gets re-read every single turn. It sits at the front of the prefix, it never changes, and it is charged at the cache rate on all $n$ turns:</p>
 
         <div class="tut-formula">
-          $$P_n = \underbrace{P_{cr}(S_0+U_0)n + P_{cr}\sum_{i=1}^{n}(n-i)(R_i+C_i+T_i+TR_i+U_i)}_{\text{Cache Read}} + \underbrace{P_i(S_0+U_0) + P_i\sum_{i=1}^{n}(TR_i+U_i)}_{\text{Uncached Input}} + \underbrace{P_o\sum_{i=1}^{n}(R_i+C_i+T_i)}_{\text{Output}}$$
+          $$P_{cr}(S_0 + U_0)\,n$$
         </div>
 
-        <h2>Understanding the Three Terms</h2>
+        <p>Everything the conversation produces later gets re-read too, but not $n$ times each. Turn 1's block is re-read by turns 2 through $n$. Turn 2's block by turns 3 through $n$. The last turn's block is never re-read at all.</p>
 
-        <h3>Term 1: Cache Read</h3>
-        <p>The system prompt $S_0 + U_0$ is read $n$ times as a prefix — it appears at the start of every request. Turn $i$'s block (reasoning $R_i$, content $C_i$, tool calls $T_i$, tool results $TR_i$, user message $U_i$) is reused $(n - i)$ times in subsequent turns. This captures the decay: early turns get reused many times, while the last turn's block is never reused. All of this is charged at the cache read price $P_{cr}$, which is much cheaper than the full input price.</p>
+        <p>That decay is exactly $(n - i)$:</p>
 
-        <h3>Term 2: Uncached Input</h3>
-        <p>Only the first occurrence of $S_0 + U_0$ and each turn's new user message $U_i$ plus tool result $TR_i$ are charged at the full input price $P_i$. These are tokens the model sees for the first time — they cannot come from cache.</p>
+        <div class="tut-formula">
+          $$P_{cr}\sum_{i=1}^{n}(n-i)(R_i + C_i + T_i + TR_i + U_i)$$
+        </div>
 
-        <h3>Term 3: Output</h3>
-        <p>Model-generated tokens — reasoning $R_i$, content $C_i$, and tool calls $T_i$ — are always charged at the output price $P_o$. Output tokens are never cached; the model produces them fresh each turn.</p>
+        <p>This is usually the largest token count in the whole session and one of the smallest line items on the invoice. That's the cache doing its job.</p>
 
-        <p class="doc-note">For Direct Chat mode, set $R$, $T$, and $TR$ to zero in the formula — those token types do not appear in simple chat interactions.</p>
+        <h2>Part 2: Fresh Input</h2>
+        <p>Only truly new tokens cost full price. There are two kinds. First, the cold-start read of $S_0 + U_0$ — somebody has to pay for the very first pass. Second, per turn, the tokens that arrive from outside the model: your user's message $U_i$ and the tool result $TR_i$.</p>
+
+        <div class="tut-formula">
+          $$P_i(S_0+U_0) + P_i\sum_{i=1}^{n}(TR_i + U_i)$$
+        </div>
+
+        <p>Note what is <em>not</em> here: $R_i$, $C_i$ and $T_i$. The model generated those, so they entered the cache as a side effect of being generated. You never pay input price for them.</p>
+
+        <h2>Part 3: Output</h2>
+        <p>The model's generation always costs the same, at the highest of the three rates. Reasoning, answer, and tool call arguments are all output:</p>
+
+        <div class="tut-formula">
+          $$P_o\sum_{i=1}^{n}(R_i + C_i + T_i)$$
+        </div>
+
+        <p>Nothing can be cached here — output is produced one token at a time, every time. This term is the one you control with prompt design and <code>reasoning_effort</code>, not with caching.</p>
+
+        <h2>Putting It Together</h2>
+        <p>Stack the three parts and you have the whole bill for an $n$-turn agent session:</p>
+
+        <div class="tut-formula">
+          $$P_n = \underbrace{P_{cr}(S_0+U_0)n + P_{cr}\sum_{i=1}^{n}(n-i)(R_i+C_i+T_i+TR_i+U_i)}_{\text{Cache Read}} + \underbrace{P_i(S_0+U_0) + P_i\sum_{i=1}^{n}(TR_i+U_i)}_{\text{Fresh Input}} + \underbrace{P_o\sum_{i=1}^{n}(R_i+C_i+T_i)}_{\text{Output}}$$
+        </div>
+
+        <p>For Direct Chat, set $R$, $T$ and $TR$ to zero — those token types don't exist in a plain chat.</p>
+
+        <p class="doc-note">This is a model, not an invoice. It counts the cold-start read of $S_0 + U_0$ in both of the first two terms, which overstates a 10-turn session by well under one percent. Cache eviction and block alignment also move real numbers slightly.</p>
+
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ Key insight!</strong>
+          The $(n-i)$ coefficient captures how many future turns will reuse turn $i$'s tokens. Early turns get reused the most! A verbose turn 1 is charged for the rest of the session, while a verbose final turn costs you once. If you're going to be wordy, be wordy late.
+        </div>
+
+        <h2>Try the Numbers</h2>
+        <p>The calculator below evaluates the formula live. Pick a model and a time slot, size your turns, and watch the three terms move against each other.</p>
       </div>
 
       <!-- ===== CHINESE ===== -->
       <div data-lang-content="zh">
         <h1>缓存如何影响你的预算</h1>
-        <p class="tut-subtitle">多轮 Agent 会话的三项成本公式，以及一个交互式计算器让你自己看数字。</p>
+        <p class="tut-subtitle">你已经知道命中缓存的 token 很便宜、未命中的很贵。这一节我们把多轮 Agent 会话的成本公式完整搭出来，再用 DeepSeek 的真实价格算出具体数字。</p>
 
-        <h2>成本公式</h2>
-        <p>对于一个 $n$ 轮的 Agent 会话，总成本 $P_n$ 拆解为三项：</p>
+        <h2>三种价格</h2>
+        <p>你发出和收到的每个 token，都按三种价格中的一种计费。服务商会把三种都公示出来，而它们之间差得很远：</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>符号</th><th>适用对象</th><th>为什么是这个价</th></tr></thead>
+          <tbody>
+            <tr><td><strong>P<sub>cr</sub></strong></td><td>命中缓存的输入 token</td><td>GPU 的活在更早的请求里就干完了</td></tr>
+            <tr><td><strong>P<sub>i</sub></strong></td><td>模型第一次见到的输入 token</td><td>需要完整跑一遍注意力</td></tr>
+            <tr><td><strong>P<sub>o</sub></strong></td><td>模型生成的每一个 token</td><td>一个 token 一次前向，只能一个一个出</td></tr>
+          </tbody>
+        </table>
+
+        <p>下面是 DeepSeek 的实际价格，单位为元每百万 token：</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>模型</th><th>时段</th><th>P<sub>cr</sub></th><th>P<sub>i</sub></th><th>P<sub>o</sub></th></tr></thead>
+          <tbody>
+            <tr><td>deepseek-v4-flash</td><td>空闲</td><td>0.05</td><td>1.50</td><td>4.50</td></tr>
+            <tr><td>deepseek-v4-flash</td><td>高峰</td><td>0.10</td><td>3.00</td><td>9.00</td></tr>
+            <tr><td>deepseek-v4-pro</td><td>空闲</td><td>0.15</td><td>4.50</td><td>13.50</td></tr>
+            <tr><td>deepseek-v4-pro</td><td>高峰</td><td>0.30</td><td>9.00</td><td>27.00</td></tr>
+          </tbody>
+        </table>
+
+        <p>有两个倍数值得记住：全价输入是缓存读取的 30 倍，输出是 90 倍。你在 Agent 架构上做的每个设计决策，本质上都是在决定 token 落进哪个桶。</p>
+
+        <p>现在一块一块把账单搭起来。</p>
+
+        <h2>第一块：缓存读取</h2>
+        <p>系统提示词每一轮都要被重读一遍。它待在前缀最前面，从不改动，而且在全部 $n$ 轮里都按缓存价计费：</p>
 
         <div class="tut-formula">
-          $$P_n = \underbrace{P_{cr}(S_0+U_0)n + P_{cr}\sum_{i=1}^{n}(n-i)(R_i+C_i+T_i+TR_i+U_i)}_{\text{Cache Read}} + \underbrace{P_i(S_0+U_0) + P_i\sum_{i=1}^{n}(TR_i+U_i)}_{\text{Uncached Input}} + \underbrace{P_o\sum_{i=1}^{n}(R_i+C_i+T_i)}_{\text{Output}}$$
+          $$P_{cr}(S_0 + U_0)\,n$$
         </div>
 
-        <h2>理解三项的含义</h2>
+        <p>对话后面产生的内容也会被重读，但不是每块都读 $n$ 次。第 1 轮的块会被第 2 到第 $n$ 轮重读，第 2 轮的块被第 3 到第 $n$ 轮重读，最后一轮的块则完全不会被重读。</p>
 
-        <h3>第一项：缓存读取</h3>
-        <p>系统提示 $S_0 + U_0$ 作为前缀被读取 $n$ 次——每次请求都在开头出现。第 $i$ 轮的块（推理 $R_i$、内容 $C_i$、工具调用 $T_i$、工具结果 $TR_i$、用户消息 $U_i$）在后续轮次中被重用 $(n - i)$ 次。这体现了衰减：早期轮次被大量复用，最后一轮的块则从不被复用。全部按缓存读取价 $P_{cr}$ 计费，远低于全价输入。</p>
+        <p>这个衰减刚好就是 $(n - i)$：</p>
 
-        <h3>第二项：未缓存输入</h3>
-        <p>只有 $S_0 + U_0$ 的首次出现，以及每轮新的用户消息 $U_i$ 加工具结果 $TR_i$，按全价输入 $P_i$ 计费。这些是模型第一次见到的 token，不可能来自缓存。</p>
+        <div class="tut-formula">
+          $$P_{cr}\sum_{i=1}^{n}(n-i)(R_i + C_i + T_i + TR_i + U_i)$$
+        </div>
 
-        <h3>第三项：输出</h3>
-        <p>模型生成的 token——推理 $R_i$、内容 $C_i$、工具调用 $T_i$——始终按输出价 $P_o$ 计费。输出 token 不会被缓存，模型每轮都重新生成。</p>
+        <p>这一项通常是整场会话里 token 数量最大的部分，同时是账单上金额最小的条目之一。这就是缓存在干活。</p>
 
-        <p class="doc-note">直聊模式下，把公式中的 $R$、$T$、$TR$ 设为零即可——简单聊天交互不涉及这些 token 类型。</p>
+        <h2>第二块：全价输入</h2>
+        <p>只有真正新的 token 才按全价算。它们分两种。第一种是 $S_0 + U_0$ 的冷启动读取 —— 第一遍总得有人付。第二种是每轮从模型外部进来的 token：用户的消息 $U_i$ 和工具返回 $TR_i$。</p>
+
+        <div class="tut-formula">
+          $$P_i(S_0+U_0) + P_i\sum_{i=1}^{n}(TR_i + U_i)$$
+        </div>
+
+        <p>注意这里<em>没有</em> $R_i$、$C_i$ 和 $T_i$。这些是模型自己生成的，生成的同时就顺带进了缓存，所以你永远不会为它们付输入价。</p>
+
+        <h2>第三块：输出</h2>
+        <p>模型的生成部分价格始终不变，而且是三种价格里最贵的那个。推理、回答、工具调用参数，全都算输出：</p>
+
+        <div class="tut-formula">
+          $$P_o\sum_{i=1}^{n}(R_i + C_i + T_i)$$
+        </div>
+
+        <p>这里没有任何东西能被缓存 —— 输出永远是一个 token 一个 token 现场生成的。这一项要靠 prompt 设计和 <code>reasoning_effort</code> 来控制，缓存帮不上忙。</p>
+
+        <h2>拼在一起</h2>
+        <p>把三块叠起来，就是一场 $n$ 轮 Agent 会话的完整账单：</p>
+
+        <div class="tut-formula">
+          $$P_n = \underbrace{P_{cr}(S_0+U_0)n + P_{cr}\sum_{i=1}^{n}(n-i)(R_i+C_i+T_i+TR_i+U_i)}_{\text{Cache Read}} + \underbrace{P_i(S_0+U_0) + P_i\sum_{i=1}^{n}(TR_i+U_i)}_{\text{Fresh Input}} + \underbrace{P_o\sum_{i=1}^{n}(R_i+C_i+T_i)}_{\text{Output}}$$
+        </div>
+
+        <p>直聊模式下，把 $R$、$T$、$TR$ 设为零即可 —— 普通聊天里没有这些 token 类型。</p>
+
+        <p class="doc-note">这是一个模型，不是账单原件。它把 $S_0 + U_0$ 的冷启动读取在前两项里各算了一次，对一场 10 轮会话的高估远低于百分之一。缓存驱逐和块对齐也会让真实数字略有偏移。</p>
+
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ 关键认知！</strong>
+          $(n-i)$ 这个系数表达的是：第 $i$ 轮的 token 还会被之后多少轮复用。越早的轮次被复用得越多！第 1 轮啰嗦，后面整场会话都在为它付费；最后一轮啰嗦，只付一次。要啰嗦，就晚点啰嗦。
+        </div>
+
+        <h2>拿数字试试</h2>
+        <p>下面的计算器会实时套用这个公式。选一个模型和时段，把每轮的规模调一调，看三项之间怎么此消彼长。</p>
       </div>
 
       <!-- ===== INTERACTIVE CALCULATOR (shared) ===== -->
       <div class="tut-interactive" id="calc-section">
-        <h4 data-lang-content="en" class="is-visible">Cost Calculator</h4>
+        <h4 data-lang-content="en">Cost Calculator</h4>
         <h4 data-lang-content="zh">成本计算器</h4>
 
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
           <div>
-            <label data-lang-content="en" class="is-visible" style="font-size:13px;font-weight:600;">Model</label>
-            <label data-lang-content="zh" style="font-size:13px;font-weight:600;">模型</label>
-            <select id="sel-model" style="display:block;margin-top:4px;padding:6px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;">
+            <label style="font-size:13px;font-weight:700;">
+              <span data-lang-content="en">Model</span>
+              <span data-lang-content="zh">模型</span>
+            </label>
+            <select id="sel-model" class="tut-select" style="display:block;margin-top:4px;">
               <option value="flash">deepseek-v4-flash</option>
               <option value="pro">deepseek-v4-pro</option>
             </select>
           </div>
           <div>
-            <label data-lang-content="en" class="is-visible" style="font-size:13px;font-weight:600;">Time Slot</label>
-            <label data-lang-content="zh" style="font-size:13px;font-weight:600;">时段</label>
-            <select id="sel-slot" style="display:block;margin-top:4px;padding:6px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;">
+            <label style="font-size:13px;font-weight:700;">
+              <span data-lang-content="en">Time slot</span>
+              <span data-lang-content="zh">时段</span>
+            </label>
+            <select id="sel-slot" class="tut-select" style="display:block;margin-top:4px;">
               <option value="idle" data-en="Off-peak" data-zh="空闲时段">Off-peak</option>
               <option value="peak" data-en="Peak" data-zh="高峰时段">Peak</option>
             </select>
@@ -154,37 +282,58 @@
 
         <div class="tut-slider-group">
           <div class="tut-slider-item">
-            <label>S₀ (system prompt tokens)</label>
+            <label>
+              <span data-lang-content="en">S₀ — system prompt</span>
+              <span data-lang-content="zh">S₀ —— 系统提示词</span>
+            </label>
             <input type="range" id="sl-s0" min="200" max="4000" value="1200" step="50">
             <span class="slider-val" id="val-s0">1200</span>
           </div>
           <div class="tut-slider-item">
-            <label>U (user message tokens)</label>
+            <label>
+              <span data-lang-content="en">U — user message</span>
+              <span data-lang-content="zh">U —— 用户消息</span>
+            </label>
             <input type="range" id="sl-u" min="20" max="500" value="150" step="10">
             <span class="slider-val" id="val-u">150</span>
           </div>
           <div class="tut-slider-item">
-            <label>R (reasoning tokens)</label>
+            <label>
+              <span data-lang-content="en">R — reasoning</span>
+              <span data-lang-content="zh">R —— 推理</span>
+            </label>
             <input type="range" id="sl-r" min="0" max="8000" value="2500" step="50">
             <span class="slider-val" id="val-r">2500</span>
           </div>
           <div class="tut-slider-item">
-            <label>C (content tokens)</label>
+            <label>
+              <span data-lang-content="en">C — answer length</span>
+              <span data-lang-content="zh">C —— 回答长度</span>
+            </label>
             <input type="range" id="sl-c" min="20" max="2000" value="450" step="10">
             <span class="slider-val" id="val-c">450</span>
           </div>
           <div class="tut-slider-item">
-            <label>T (tool call tokens)</label>
+            <label>
+              <span data-lang-content="en">T — tool call</span>
+              <span data-lang-content="zh">T —— 工具调用</span>
+            </label>
             <input type="range" id="sl-t" min="0" max="500" value="40" step="10">
             <span class="slider-val" id="val-t">40</span>
           </div>
           <div class="tut-slider-item">
-            <label>TR (tool result tokens)</label>
+            <label>
+              <span data-lang-content="en">TR — tool result</span>
+              <span data-lang-content="zh">TR —— 工具返回</span>
+            </label>
             <input type="range" id="sl-tr" min="0" max="1000" value="200" step="10">
             <span class="slider-val" id="val-tr">200</span>
           </div>
           <div class="tut-slider-item">
-            <label>n (number of turns)</label>
+            <label>
+              <span data-lang-content="en">n — number of turns</span>
+              <span data-lang-content="zh">n —— 总轮次</span>
+            </label>
             <input type="range" id="sl-n" min="1" max="30" value="10" step="1">
             <span class="slider-val" id="val-n">10</span>
           </div>
@@ -194,32 +343,36 @@
         <div class="tut-metrics" id="cost-metrics" style="margin-top:20px;">
           <div class="tut-metric">
             <div class="tut-metric__value" id="m-cache-read">—</div>
-            <div class="tut-metric__label">① Cache Read</div>
+            <div class="tut-metric__label" data-lang-content="en">① Cache read</div>
+            <div class="tut-metric__label" data-lang-content="zh">① 缓存读取</div>
           </div>
           <div class="tut-metric">
             <div class="tut-metric__value" id="m-uncached">—</div>
-            <div class="tut-metric__label">② Uncached Input</div>
+            <div class="tut-metric__label" data-lang-content="en">② Fresh input</div>
+            <div class="tut-metric__label" data-lang-content="zh">② 全价输入</div>
           </div>
           <div class="tut-metric">
             <div class="tut-metric__value" id="m-output">—</div>
-            <div class="tut-metric__label">③ Output</div>
+            <div class="tut-metric__label" data-lang-content="en">③ Output</div>
+            <div class="tut-metric__label" data-lang-content="zh">③ 输出</div>
           </div>
           <div class="tut-metric" style="border-left:3px solid #1f8a96;">
             <div class="tut-metric__value" id="m-total" style="color:#1f8a96;">—</div>
-            <div class="tut-metric__label">Total P<sub>n</sub></div>
+            <div class="tut-metric__label" data-lang-content="en">Total P<sub>n</sub></div>
+            <div class="tut-metric__label" data-lang-content="zh">总计 P<sub>n</sub></div>
           </div>
         </div>
 
         <div class="tut-metrics" style="margin-top:12px;">
           <div class="tut-metric" style="border-left:3px solid #ff7a5c;">
             <div class="tut-metric__value" id="m-nocache" style="color:#ff7a5c;">—</div>
-            <div class="tut-metric__label" data-lang-content="en" class="is-visible">Without KV Cache</div>
-            <div class="tut-metric__label" data-lang-content="zh">无 KV Cache 基线</div>
+            <div class="tut-metric__label" data-lang-content="en">Same session, no cache</div>
+            <div class="tut-metric__label" data-lang-content="zh">同一会话，无缓存</div>
           </div>
           <div class="tut-metric">
             <div class="tut-metric__value" id="m-savings">—</div>
-            <div class="tut-metric__label" data-lang-content="en" class="is-visible">Savings</div>
-            <div class="tut-metric__label" data-lang-content="zh">节省</div>
+            <div class="tut-metric__label" data-lang-content="en">Saved by the cache</div>
+            <div class="tut-metric__label" data-lang-content="zh">缓存省下的比例</div>
           </div>
         </div>
 
@@ -227,6 +380,111 @@
         <div class="tut-chart-wrap" style="margin-top:20px;">
           <canvas id="cost-chart" height="300"></canvas>
         </div>
+
+        <p style="font-size:13.5px;margin:0;color:#7c6a52;" data-lang-content="en">The gap between the two curves widens with every turn — caching pays off most in long sessions.</p>
+        <p style="font-size:13.5px;margin:0;color:#7c6a52;" data-lang-content="zh">两条曲线的差距每一轮都在拉大 —— 会话越长，缓存越划算。</p>
+      </div>
+
+      <!-- ===== ENGLISH (continued) ===== -->
+      <div data-lang-content="en" class="is-visible">
+        <h2>A Worked Example</h2>
+        <p>Let's say you run a 10-turn coding agent session with <code>deepseek-v4-flash</code> in the off-peak window. Those are the calculator's default settings:</p>
+
+        <ul>
+          <li>System prompt plus opening request: $S_0 + U_0$ = 1,350 tokens</li>
+          <li>Each turn produces 2,500 reasoning + 450 answer + 40 tool call + 200 tool result + 150 user = <strong>3,340 tokens</strong></li>
+          <li>Prices: P<sub>cr</sub> = 0.05, P<sub>i</sub> = 1.50, P<sub>o</sub> = 4.50 ¥/M</li>
+        </ul>
+
+        <p>Term by term:</p>
+
+        <div class="tut-worked">
+          <h4>10-turn session, deepseek-v4-flash, off-peak</h4>
+          <table>
+            <tr><td>① Cache read — 1,350 × 10 + 3,340 × 45 = 163,800 tokens @ 0.05</td><td>0.0082 ¥</td></tr>
+            <tr><td>② Fresh input — 1,350 + 10 × 350 = 4,850 tokens @ 1.50</td><td>0.0073 ¥</td></tr>
+            <tr><td>③ Output — 10 × 2,990 = 29,900 tokens @ 4.50</td><td>0.1346 ¥</td></tr>
+            <tr><td>Total P₁₀</td><td>0.150 ¥</td></tr>
+          </table>
+        </div>
+
+        <p>The 45 in term ① is $\sum_{i=1}^{10}(10-i)$ = 9 + 8 + … + 1 + 0. It's the reason 163,800 tokens flow through the cache in a session that only ever sent 168,650 input tokens: 97% of your input is a re-read.</p>
+
+        <p>Now the same session with caching switched off. Every request pays full input price for its entire history:</p>
+
+        <div class="tut-worked">
+          <h4>The same session with no cache</h4>
+          <table>
+            <tr><td>Input — 167,300 tokens @ 1.50</td><td>0.2510 ¥</td></tr>
+            <tr><td>Output — unchanged, 29,900 tokens @ 4.50</td><td>0.1346 ¥</td></tr>
+            <tr><td>Total</td><td>0.386 ¥</td></tr>
+          </table>
+        </div>
+
+        <p>That's a 61% saving on the session. Look only at the input side and it's starker: 0.0155 ¥ with cache versus 0.2510 ¥ without, about <strong>16× cheaper</strong>.</p>
+
+        <p>But notice what the saving reveals. Once caching is doing its job, output is 0.1346 of a 0.150 ¥ bill — <strong>90% of what you pay</strong>. Your input problem is solved; your output problem is now the whole problem.</p>
+
+        <h2>What This Means for Design</h2>
+        <ol class="tut-steps">
+          <li><strong>Keep the prefix frozen.</strong> A stable system prompt is worth more than a clever one that gets tweaked per request. Put anything volatile — timestamps, session IDs — at the end of the message list, never the front.</li>
+          <li><strong>Prefer long sessions to fresh ones.</strong> Cold starts are the expensive part. Ten turns in one session cost far less than ten one-turn sessions.</li>
+          <li><strong>Compress reluctantly.</strong> Summarizing history to save context window trades a cheap cache read for an expensive cold start. Sometimes worth it, rarely free.</li>
+          <li><strong>Spend your effort on output.</strong> With cache on, output dominates. That makes <code>reasoning_effort</code>, answer length, and how many turns a task takes your real cost levers.</li>
+        </ol>
+
+        <p>That last point is where the rest of these tutorials go. If the cheapest agent is the one that reaches the answer in fewer, better-informed turns, then the interesting question becomes: how do you make an agent that already knows what to do? That's what a Skill is for.</p>
+      </div>
+
+      <!-- ===== CHINESE (continued) ===== -->
+      <div data-lang-content="zh">
+        <h2>完整算一遍</h2>
+        <p>假设你在空闲时段用 <code>deepseek-v4-flash</code> 跑一场 10 轮的编码 Agent 会话。下面这组就是计算器的默认参数：</p>
+
+        <ul>
+          <li>系统提示词加首个请求：$S_0 + U_0$ = 1350 token</li>
+          <li>每轮产生 2500 推理 + 450 回答 + 40 工具调用 + 200 工具返回 + 150 用户消息 = <strong>3340 token</strong></li>
+          <li>价格：P<sub>cr</sub> = 0.05，P<sub>i</sub> = 1.50，P<sub>o</sub> = 4.50 元每百万</li>
+        </ul>
+
+        <p>逐项算：</p>
+
+        <div class="tut-worked">
+          <h4>10 轮会话，deepseek-v4-flash，空闲时段</h4>
+          <table>
+            <tr><td>① 缓存读取 —— 1350 × 10 + 3340 × 45 = 163800 token，单价 0.05</td><td>0.0082 元</td></tr>
+            <tr><td>② 全价输入 —— 1350 + 10 × 350 = 4850 token，单价 1.50</td><td>0.0073 元</td></tr>
+            <tr><td>③ 输出 —— 10 × 2990 = 29900 token，单价 4.50</td><td>0.1346 元</td></tr>
+            <tr><td>总计 P₁₀</td><td>0.150 元</td></tr>
+          </table>
+        </div>
+
+        <p>① 里那个 45 就是 $\sum_{i=1}^{10}(10-i)$ = 9 + 8 + …… + 1 + 0。所以这场只发出过 168650 个输入 token 的会话，会有 163800 个 token 从缓存里流过：你的输入有 97% 是重读。</p>
+
+        <p>再看同一场会话在没有缓存时的样子。每次请求都要为它的全部历史付全价输入：</p>
+
+        <div class="tut-worked">
+          <h4>同一场会话，没有缓存</h4>
+          <table>
+            <tr><td>输入 —— 167300 token，单价 1.50</td><td>0.2510 元</td></tr>
+            <tr><td>输出 —— 不变，29900 token，单价 4.50</td><td>0.1346 元</td></tr>
+            <tr><td>总计</td><td>0.386 元</td></tr>
+          </table>
+        </div>
+
+        <p>整场会话省下 61%。只看输入那一侧差距更悬殊：有缓存 0.0155 元，没缓存 0.2510 元，大约<strong>便宜 16 倍</strong>。</p>
+
+        <p>但更值得注意的是这个节省揭示了什么。缓存一旦真正起作用，0.150 元的账单里输出占了 0.1346 元 —— <strong>你付的钱有九成在输出上</strong>。输入的问题解决了，输出的问题就变成了全部问题。</p>
+
+        <h2>这对设计意味着什么</h2>
+        <ol class="tut-steps">
+          <li><strong>把前缀冻住。</strong>一个稳定的系统提示词，比一个每次请求都要微调的聪明提示词更值钱。所有会变的东西 —— 时间戳、会话 ID —— 都放到消息列表末尾，绝不要放开头。</li>
+          <li><strong>宁可长会话，不要重开。</strong>贵的地方是冷启动。一场十轮会话的成本，远低于十场一轮会话。</li>
+          <li><strong>压缩要慎重。</strong>为了省上下文窗口去做历史摘要，是用一次便宜的缓存读取换来一次昂贵的冷启动。有时值得，但从来不免费。</li>
+          <li><strong>把精力花在输出上。</strong>缓存开着的时候，输出是主导项。所以 <code>reasoning_effort</code>、回答长度，以及一个任务要走多少轮，才是你真正的成本杠杆。</li>
+        </ol>
+
+        <p>最后这一点正是后面几篇教程的方向。如果最省钱的 Agent 是那种用更少、更有把握的轮次就把答案拿到手的 Agent，那么有意思的问题就变成了：怎么让一个 Agent 一上来就知道该怎么做？这就是 Skill 要解决的事。</p>
       </div>
 
       <div class="tut-nav-footer">
@@ -255,6 +513,7 @@ document.addEventListener("DOMContentLoaded", function() {
       {left: "$$", right: "$$", display: true},
       {left: "$", right: "$", display: false}
     ],
+    ignoredClasses: ["tut-code"],
     throwOnError: false
   });
 
@@ -275,6 +534,25 @@ document.addEventListener("DOMContentLoaded", function() {
     tr: document.getElementById("sl-tr"),
     n:  document.getElementById("sl-n")
   };
+
+  function labels() {
+    var zh = window.__xskillLang === "zh";
+    return {
+      withCache: zh ? "有 KV Cache" : "With KV Cache",
+      noCache:   zh ? "无 KV Cache" : "Without KV Cache",
+      x:         zh ? "轮次 n" : "Turns (n)",
+      y:         zh ? "累计成本（元）" : "Cumulative cost (¥)"
+    };
+  }
+
+  function applySelectLang() {
+    var attr = window.__xskillLang === "zh" ? "data-zh" : "data-en";
+    var opts = selSlot.querySelectorAll("option");
+    for (var i = 0; i < opts.length; i++) {
+      var v = opts[i].getAttribute(attr);
+      if (v) opts[i].textContent = v;
+    }
+  }
 
   function getVals() {
     return {
@@ -335,6 +613,9 @@ document.addEventListener("DOMContentLoaded", function() {
     var v = getVals();
     var n = v.n;
     var p = getPricing();
+    var t = labels();
+
+    applySelectLang();
 
     Object.keys(sliders).forEach(function(k) {
       document.getElementById("val-" + k).textContent = sliders[k].value;
@@ -352,29 +633,33 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("m-savings").textContent = savings.toFixed(1) + "%";
 
     // chart: cumulative Pn over turns 1-30
-    var labels = [];
+    var chartLabels = [];
     var withCacheData = [];
     var noCacheData = [];
     for (var i = 1; i <= 30; i++) {
-      labels.push(i);
+      chartLabels.push(i);
       withCacheData.push(calcCosts(v, i, p).total);
       noCacheData.push(calcNoCacheCost(v, i, p));
     }
 
     if (chart) {
-      chart.data.labels = labels;
+      chart.data.labels = chartLabels;
       chart.data.datasets[0].data = withCacheData;
+      chart.data.datasets[0].label = t.withCache;
       chart.data.datasets[1].data = noCacheData;
+      chart.data.datasets[1].label = t.noCache;
+      chart.options.scales.x.title.text = t.x;
+      chart.options.scales.y.title.text = t.y;
       chart.update();
     } else {
       var ctx = document.getElementById("cost-chart").getContext("2d");
       chart = new Chart(ctx, {
         type: "line",
         data: {
-          labels: labels,
+          labels: chartLabels,
           datasets: [
             {
-              label: "With KV Cache",
+              label: t.withCache,
               data: withCacheData,
               borderColor: "#1f8a96",
               backgroundColor: "rgba(31,138,150,0.1)",
@@ -384,7 +669,7 @@ document.addEventListener("DOMContentLoaded", function() {
               pointRadius: 0
             },
             {
-              label: "Without KV Cache",
+              label: t.noCache,
               data: noCacheData,
               borderColor: "#ff7a5c",
               backgroundColor: "rgba(255,122,92,0.1)",
@@ -409,8 +694,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
           },
           scales: {
-            x: { title: { display: true, text: "Turns (n)" } },
-            y: { title: { display: true, text: "Cumulative Cost (¥)" }, min: 0 }
+            x: { title: { display: true, text: t.x } },
+            y: { title: { display: true, text: t.y }, min: 0 }
           }
         }
       });
@@ -422,6 +707,13 @@ document.addEventListener("DOMContentLoaded", function() {
   });
   selModel.addEventListener("change", update);
   selSlot.addEventListener("change", update);
+
+  // re-label the chart and the slot dropdown when the site language changes
+  document.addEventListener("click", function(e) {
+    if (e.target && e.target.closest && e.target.closest("[data-set-lang]")) {
+      setTimeout(update, 0);
+    }
+  });
 
   update();
 });

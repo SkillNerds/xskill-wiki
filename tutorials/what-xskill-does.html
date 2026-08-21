@@ -79,33 +79,55 @@
       <!-- ===== ENGLISH ===== -->
       <div data-lang-content="en" class="is-visible">
         <h1>What xskill Does</h1>
-        <p class="tut-subtitle">xskill automatically distills agent execution trajectories into reusable Skills.</p>
+        <p class="tut-subtitle">Chapter B ended on an awkward question: who writes all these Skills? xskill's answer is that nobody should have to.</p>
+
+        <p>The idea is that you already produce the raw material. Every agent session you run is a record of a problem being solved — including the wrong turns, the correction, and the thing that finally worked. xskill watches those sessions and distills them into Skills, so the library you end up with was written by your own work rather than by an afternoon of documentation.</p>
+
+        <p>Mechanically it's a pipeline. A trajectory is split into <strong>Atoms</strong>, each a single intent. Each Atom is routed to the Skill it belongs to. When a Skill has accumulated enough new material, it gets rewritten — and because every Skill is its own git repository, that rewrite is a commit you can read, blame, and revert.</p>
+
+        <p>New versions don't ship on faith either. A candidate runs against a controlled share of live traffic alongside the incumbent, both get a UX score, and the loser is discarded automatically. Improving a Skill becomes a measurement rather than an argument.</p>
 
         <h2>Core Capabilities</h2>
         <ul>
-          <li><b>Trajectory → Skill pipeline</b> — Watch agent sessions, split them into single-intent Atoms, route each Atom to its Skill, and rewrite the Skill when enough material accumulates.</li>
-          <li><b>Team sharing</b> — One person solves a problem; the distilled Skill is automatically available to every teammate. No one writes documentation or copies files around.</li>
-          <li><b>Git-versioned evolution</b> — Every Skill is its own git repository. Every change is traceable and linked back to the trajectories that triggered it.</li>
-          <li><b>Canary A/B + UX Score</b> — New Skill versions are tested on a controlled share of live traffic. The version with a higher UX score (1–10) wins; the loser is discarded automatically.</li>
+          <li><strong>Trajectory → Skill pipeline</strong> — watch sessions, split into single-intent Atoms, route each Atom to its Skill, rewrite when enough material accumulates.</li>
+          <li><strong>Team sharing</strong> — one person solves a problem and the distilled Skill is available to every teammate. Nobody writes documentation or copies files around.</li>
+          <li><strong>Git-versioned evolution</strong> — every Skill is its own repository, and every change links back to the trajectories that triggered it.</li>
+          <li><strong>Canary A/B with UX scoring</strong> — candidate versions are tested on live traffic; the higher score (1–10) wins and the loser is dropped.</li>
         </ul>
 
-        <p class="doc-note">Coming soon: architecture deep-dive and configuration guide.</p>
+        <h2>What's Coming in This Tutorial</h2>
+        <p>In this upcoming tutorial, we'll walk you through the pipeline end to end: how a raw trajectory is cut into Atoms, what the routing decision actually looks like, and when a Skill decides it has learned enough to rewrite itself.</p>
+
+        <p>We'll also open the dashboard and trace one real Skill backwards — from the version running today, through the rewrites, to the original session where someone was just trying to get their build to pass.</p>
+
+        <p class="doc-note">Coming soon: architecture deep-dive, configuration reference, and a guided dashboard tour.</p>
       </div>
 
       <!-- ===== CHINESE ===== -->
       <div data-lang-content="zh">
         <h1>xskill 做什么</h1>
-        <p class="tut-subtitle">xskill 自动将 Agent 执行轨迹蒸馏为可复用的 Skill。</p>
+        <p class="tut-subtitle">B 章结尾留了一个尴尬的问题：这些 Skill 谁来写？xskill 的回答是，谁都不该需要写。</p>
+
+        <p>思路是：原材料你其实已经在源源不断地产出了。你跑的每一次 Agent 会话，都是一份「一个问题如何被解决」的记录 —— 包括走错的那几步、纠正的过程，以及最后真正管用的那个做法。xskill 盯着这些会话，把它们蒸馏成 Skill，于是你最终拿到的技能库是你自己干活干出来的，而不是靠一个下午的文档时间写出来的。</p>
+
+        <p>机制上它是一条管线。一条轨迹会被切成若干 <strong>Atom</strong>，每个 Atom 对应一个单一意图；每个 Atom 被路由到它该去的那个 Skill；当某个 Skill 攒够了新素材，它就会被重写 —— 而因为每个 Skill 本身是一个 git 仓库，这次重写就是一个你能读、能 blame、能回退的 commit。</p>
+
+        <p>新版本也不是靠信任上线的。候选版本会和现役版本一起在一小部分真实流量上跑，两边都拿 UX 评分，输的那个自动淘汰。于是改进一个 Skill 变成了一件测量的事，而不是一件争论的事。</p>
 
         <h2>核心能力</h2>
         <ul>
-          <li><b>轨迹 → Skill 管线</b> — 监听 Agent 会话，按单一意图切成 Atom，将每个 Atom 路由到对应 Skill，攒够素材后重写 Skill。</li>
-          <li><b>团队共享</b> — 一个人解决了问题，蒸馏出的 Skill 自动对全团队可用。不需要写文档，也不需要手动拷贝文件。</li>
-          <li><b>Git 版本化进化</b> — 每个 Skill 就是一个独立 git 仓库。每次变更都可追溯，并关联到触发它的执行轨迹。</li>
-          <li><b>灰度 A/B + UX 评分</b> — 新版本 Skill 在一部分真实流量上做受控测试。UX 评分（1–10）更高的版本胜出，输的版本自动淘汰。</li>
+          <li><strong>轨迹 → Skill 管线</strong> —— 监听会话，按单一意图切成 Atom，把每个 Atom 路由到对应 Skill，攒够素材后重写。</li>
+          <li><strong>团队共享</strong> —— 一个人解决了问题，蒸馏出的 Skill 全团队都能用。不需要写文档，也不需要手动拷文件。</li>
+          <li><strong>Git 版本化进化</strong> —— 每个 Skill 都是独立仓库，每次变更都能追溯到触发它的那些轨迹。</li>
+          <li><strong>灰度 A/B 加 UX 评分</strong> —— 候选版本在真实流量上受控测试，评分（1–10）高的胜出，输的被淘汰。</li>
         </ul>
 
-        <p class="doc-note">即将推出：架构深度解析和配置指南。</p>
+        <h2>这篇教程会讲什么</h2>
+        <p>在接下来这篇教程里，我们会把这条管线从头到尾走一遍：一条原始轨迹是怎么被切成 Atom 的、路由那一步实际上在判断什么，以及一个 Skill 凭什么认为自己已经学够了、可以重写了。</p>
+
+        <p>我们还会打开 dashboard，把一个真实的 Skill 倒着追一遍 —— 从今天在跑的版本，经过历次重写，一直回到最初那次「某人只是想让自己的构建过一下」的会话。</p>
+
+        <p class="doc-note">即将推出：架构深度解析、配置参考，以及一次带路的 dashboard 导览。</p>
       </div>
 
       <div class="tut-nav-footer">
@@ -133,6 +155,7 @@ document.addEventListener("DOMContentLoaded", function() {
       {left: "$$", right: "$$", display: true},
       {left: "$", right: "$", display: false}
     ],
+    ignoredClasses: ["tut-code"],
     throwOnError: false
   });
 });

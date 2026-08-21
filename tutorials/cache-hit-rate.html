@@ -79,53 +79,233 @@
       <!-- ===== ENGLISH ===== -->
       <div data-lang-content="en" class="is-visible">
         <h1>Cache Hit Rate</h1>
-        <p class="tut-subtitle">Derive the formulas for cache hit rate in both modes, then visualize how hit rate evolves over a multi-turn conversation.</p>
+        <p class="tut-subtitle">Now we know the server tries to reuse previous computations. But how much does it actually reuse? That's the cache hit rate — and it's different for our two API modes.</p>
 
-        <h2>Agent Mode Formula</h2>
-        <p>In Agent mode, messages are strictly appended. At turn $n$, the total input is the full history. The only "new" tokens (cache miss) are the user message $U_n$ just added:</p>
+        <h2>Hit Rate in One Line</h2>
+        <p>Let's start with the intuition. The hit rate is just a ratio of two token counts:</p>
+
+        <div class="tut-formula">
+          $$\text{HitRatio} = \frac{\text{tokens reused from cache}}{\text{total input tokens}} = 1 - \frac{\text{new tokens}}{\text{total input tokens}}$$
+        </div>
+
+        <p>The second form is the useful one. Counting what's <em>new</em> is easy — it's whatever we appended since the last request. So the whole job is: figure out what got appended, and divide.</p>
+
+        <p>And "what got appended" is exactly where the two modes part ways.</p>
+
+        <h2>Agent Mode: Only the Tail Is New</h2>
+        <p>In Agent mode we keep everything, reasoning included. So the conversation grows by pure appending:</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">Turn n−1</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">U₀</span>
+          <span class="tok tok--hit">…</span>
+          <span class="tok tok--hit">R₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">C₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">T₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">TR₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">U₍ₙ₋₁₎</span>
+        </div>
+        <div class="tok-seq">
+          <span class="tok-turn-label">Turn n</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">U₀</span>
+          <span class="tok tok--hit">…</span>
+          <span class="tok tok--hit">R₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">C₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">T₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">TR₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">U₍ₙ₋₁₎</span>
+          <span class="tok tok--new">Uₙ</span>
+        </div>
+        <div class="tok-legend">
+          <span class="lg-hit">Already in the cache</span>
+          <span class="lg-new">New this turn</span>
+        </div>
+
+        <p>Notice: each new turn only adds Uₙ at the end. Everything before it is identical to last time, byte for byte, in the same positions.</p>
+
+        <p>So the hit rate is simply <em>one minus new stuff over total stuff</em>:</p>
 
         <div class="tut-formula">
           $$\text{HitRatio}_{\text{agent}}(n) = 1 - \frac{U_n}{S_0 + U_0 + \sum_{i=1}^{n-1}(R_i + C_i + T_i + TR_i + U_i) + U_n}$$
         </div>
 
-        <p>As $n$ grows, the denominator grows much faster than the numerator ($U_n$ stays roughly constant), so hit rate monotonically approaches 100%.</p>
+        <p>The numerator is a single user message and stays roughly constant. The denominator grows by a few thousand tokens every turn. That's why the ratio climbs — the miss doesn't grow, the total does.</p>
 
-        <h2>Direct Chat Mode Formula</h2>
-        <p>In Direct Chat, the server strips reasoning ($R_i$) from history. Additionally, the last assistant response $C_{n-1}$ is freshly appended (wasn't in the previous request). So the miss includes both $C_{n-1}$ and the new $U_n$:</p>
+        <div class="tut-worked">
+          <h4>Quick check: turn 10, agent mode</h4>
+          <p style="margin-bottom:8px;">With S₀ = 800, U = 100, and R + C + T + TR = 930 per turn, the input at turn 10 is 900 + 9 × 1030 + 100 = 10,270 tokens. The miss is just the 100-token Uₙ:</p>
+          <table>
+            <tr><td>Total input at turn 10</td><td>10,270</td></tr>
+            <tr><td>New (cache miss)</td><td>100</td></tr>
+            <tr><td>Hit rate</td><td>99.0%</td></tr>
+          </table>
+        </div>
+
+        <h2>Direct Chat: Where the Cache Leaks</h2>
+        <p>In Direct Chat, we strip reasoning. But that creates a problem — and it's a subtle one, because it's not about the size of the history. It's about <em>positions</em>.</p>
+
+        <p>Think about what the GPU held at the end of turn n−1. The server processed our input, then generated its reasoning and then its answer. Generated tokens land in the cache too, in the order they were produced:</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">In cache</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">…</span>
+          <span class="tok tok--hit">U₍ₙ₋₁₎</span>
+          <span class="tok tok--drop">R₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">C₍ₙ₋₁₎</span>
+        </div>
+
+        <p>Now look at what we send for turn n. The reasoning is gone, so C₍ₙ₋₁₎ has slid forward to sit immediately after U₍ₙ₋₁₎:</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">We send</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">…</span>
+          <span class="tok tok--hit">U₍ₙ₋₁₎</span>
+          <span class="tok tok--broken">C₍ₙ₋₁₎</span>
+          <span class="tok tok--new">Uₙ</span>
+        </div>
+        <div class="tok-legend">
+          <span class="lg-hit">Matches the cache</span>
+          <span class="lg-drop">Stripped by the server</span>
+          <span class="lg-broken">Position shifted — no longer matches</span>
+        </div>
+
+        <p>Walk the prefix match by hand. S₀ matches, the middle matches, U₍ₙ₋₁₎ matches. Then the cache expects R₍ₙ₋₁₎ and gets C₍ₙ₋₁₎ instead. The server sees a mismatch at C₍ₙ₋₁₎'s position, and cache breaks there.</p>
+
+        <p>So the miss is two blocks, not one: the previous answer plus the new question.</p>
 
         <div class="tut-formula">
           $$\text{HitRatio}_{\text{chat}}(n) = 1 - \frac{C_{n-1} + U_n}{S_0 + U_0 + \sum_{i=1}^{n-1} C_i + \sum_{i=1}^n U_i}$$
         </div>
 
-        <p>Notice: longer model answers ($C_{n-1}$) directly reduce the hit rate. Agent mode doesn't have this problem because $C_{n-1}$ was already in the previous request.</p>
+        <p>Two things follow from comparing the formulas. Direct Chat has a bigger numerator (C₍ₙ₋₁₎ + Uₙ instead of just Uₙ) and a smaller denominator, since all the reasoning tokens are missing from the history. Both push the ratio down.</p>
 
-        <h2>Interactive Visualization</h2>
+        <div class="tut-callout tut-callout--info">
+          <strong>The irony</strong>
+          Direct Chat sends fewer tokens per request, which sounds cheaper. But a larger share of those tokens is billed at the full input price — up to 30× the cache rate. Fewer tokens, worse mix.
+        </div>
+
+        <h2>See It Move</h2>
+        <p>Formulas are easier to trust once you've poked at them. The simulator below evaluates both formulas live. Drag a slider and watch which curve reacts.</p>
       </div>
 
       <!-- ===== CHINESE ===== -->
       <div data-lang-content="zh">
         <h1>缓存命中率</h1>
-        <p class="tut-subtitle">推导两种模式下缓存命中率的公式，然后可视化展示命中率在多轮对话中的演变。</p>
+        <p class="tut-subtitle">我们已经知道服务端会尽量复用之前的计算。但它实际复用了多少？这就是缓存命中率 —— 而两种 API 模式的答案很不一样。</p>
 
-        <h2>Agent 模式公式</h2>
-        <p>Agent 模式下，消息是严格追加的。在第 $n$ 轮，总输入是完整历史。唯一的"新" token（缓存未命中）是刚追加的用户消息 $U_n$：</p>
+        <h2>一行话说清命中率</h2>
+        <p>先建立直觉。命中率就是两个 token 数量的比值：</p>
+
+        <div class="tut-formula">
+          $$\text{命中率} = \frac{\text{从缓存复用的 token}}{\text{总输入 token}} = 1 - \frac{\text{新增的 token}}{\text{总输入 token}}$$
+        </div>
+
+        <p>第二种写法才好用。数<em>新增</em>的部分很容易 —— 就是上次请求之后我们追加的那些。所以整件事就剩：搞清楚追加了什么，然后做除法。</p>
+
+        <p>而「追加了什么」，正是两种模式分道扬镳的地方。</p>
+
+        <h2>Agent 模式：只有尾巴是新的</h2>
+        <p>Agent 模式什么都留着，推理也留着。所以对话是纯追加式增长的：</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">第 n−1 轮</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">U₀</span>
+          <span class="tok tok--hit">…</span>
+          <span class="tok tok--hit">R₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">C₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">T₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">TR₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">U₍ₙ₋₁₎</span>
+        </div>
+        <div class="tok-seq">
+          <span class="tok-turn-label">第 n 轮</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">U₀</span>
+          <span class="tok tok--hit">…</span>
+          <span class="tok tok--hit">R₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">C₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">T₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">TR₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">U₍ₙ₋₁₎</span>
+          <span class="tok tok--new">Uₙ</span>
+        </div>
+        <div class="tok-legend">
+          <span class="lg-hit">已经在缓存里</span>
+          <span class="lg-new">这一轮新增</span>
+        </div>
+
+        <p>注意：每一轮新增的只有末尾的 Uₙ。它前面的一切都和上次一模一样，字节相同，位置也相同。</p>
+
+        <p>所以命中率就是<em>一减去「新的」除以「全部」</em>：</p>
 
         <div class="tut-formula">
           $$\text{HitRatio}_{\text{agent}}(n) = 1 - \frac{U_n}{S_0 + U_0 + \sum_{i=1}^{n-1}(R_i + C_i + T_i + TR_i + U_i) + U_n}$$
         </div>
 
-        <p>随着 $n$ 增大，分母增长远快于分子（$U_n$ 大致不变），所以命中率单调趋近 100%。</p>
+        <p>分子是一条用户消息，大致恒定；分母每轮增加几千个 token。这就是命中率会往上爬的原因 —— 未命中不长，总量在长。</p>
 
-        <h2>直聊模式公式</h2>
-        <p>直聊模式下，服务端剥离推理（$R_i$）。而且上一轮的 assistant 回复 $C_{n-1}$ 是新追加的（上一次请求中没有）。所以未命中包含 $C_{n-1}$ 和新的 $U_n$：</p>
+        <div class="tut-worked">
+          <h4>算一下：Agent 模式第 10 轮</h4>
+          <p style="margin-bottom:8px;">取 S₀ = 800、U = 100、每轮 R + C + T + TR = 930，第 10 轮的输入是 900 + 9 × 1030 + 100 = 10270 个 token。未命中只有那 100 个 Uₙ：</p>
+          <table>
+            <tr><td>第 10 轮总输入</td><td>10,270</td></tr>
+            <tr><td>新增（未命中）</td><td>100</td></tr>
+            <tr><td>命中率</td><td>99.0%</td></tr>
+          </table>
+        </div>
+
+        <h2>直聊模式：缓存漏在哪里</h2>
+        <p>直聊模式会把推理剥掉。但这带来一个问题，而且很隐蔽 —— 问题不在历史的大小，而在<em>位置</em>。</p>
+
+        <p>想一想第 n−1 轮结束时 GPU 上存的是什么。服务端处理完我们的输入，然后先生成推理、再生成回答。生成的 token 也会进缓存，而且是按生成顺序进的：</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">缓存里</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">…</span>
+          <span class="tok tok--hit">U₍ₙ₋₁₎</span>
+          <span class="tok tok--drop">R₍ₙ₋₁₎</span>
+          <span class="tok tok--hit">C₍ₙ₋₁₎</span>
+        </div>
+
+        <p>再看第 n 轮我们发出去的是什么。推理没了，于是 C₍ₙ₋₁₎ 往前挪，紧贴在 U₍ₙ₋₁₎ 后面：</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">我们发送</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">…</span>
+          <span class="tok tok--hit">U₍ₙ₋₁₎</span>
+          <span class="tok tok--broken">C₍ₙ₋₁₎</span>
+          <span class="tok tok--new">Uₙ</span>
+        </div>
+        <div class="tok-legend">
+          <span class="lg-hit">与缓存一致</span>
+          <span class="lg-drop">被服务端剥掉</span>
+          <span class="lg-broken">位置挪动，对不上了</span>
+        </div>
+
+        <p>手动走一遍前缀匹配：S₀ 对得上，中间对得上，U₍ₙ₋₁₎ 也对得上。然后缓存期待的是 R₍ₙ₋₁₎，拿到的却是 C₍ₙ₋₁₎。服务端在 C₍ₙ₋₁₎ 这个位置发现不匹配，缓存就断在这里。</p>
+
+        <p>所以未命中是两块而不是一块：上一轮的回答，加上这一轮的新问题。</p>
 
         <div class="tut-formula">
           $$\text{HitRatio}_{\text{chat}}(n) = 1 - \frac{C_{n-1} + U_n}{S_0 + U_0 + \sum_{i=1}^{n-1} C_i + \sum_{i=1}^n U_i}$$
         </div>
 
-        <p>注意：模型回答越长（$C_{n-1}$ 越大），命中率越低。Agent 模式没有这个问题，因为 $C_{n-1}$ 已经在上一次请求中了。</p>
+        <p>把两个公式对比一下能看出两件事。直聊模式的分子更大（是 C₍ₙ₋₁₎ + Uₙ 而不只是 Uₙ），分母更小（历史里所有推理 token 都没了）。这两个方向都在把比值往下压。</p>
 
-        <h2>交互式可视化</h2>
+        <div class="tut-callout tut-callout--info">
+          <strong>反直觉的地方</strong>
+          直聊模式每次请求发的 token 更少，听起来更省。但这些 token 里按全价计费的比例更高 —— 全价可以是缓存价的 30 倍。token 少了，结构却更差。
+        </div>
+
+        <h2>动手看它变化</h2>
+        <p>公式自己拨一拨才信得过。下面这个模拟器会实时计算两个公式。拉一根滑块，看看哪条曲线在动。</p>
       </div>
 
       <!-- ===== INTERACTIVE (shared, language-independent) ===== -->
@@ -133,76 +313,114 @@
         <h4 data-lang-content="en" class="is-visible">Cache Hit Rate Explorer</h4>
         <h4 data-lang-content="zh">缓存命中率探索器</h4>
 
-        <div class="tut-toggle-group" style="margin-bottom:16px;">
-          <button class="tut-toggle-btn is-active" id="btn-agent">Agent Mode</button>
-          <button class="tut-toggle-btn" id="btn-chat">Direct Chat</button>
+        <div class="tut-toggle-group">
+          <button class="tut-toggle-btn is-active" id="btn-agent">
+            <span data-lang-content="en" class="is-visible">Agent Mode</span>
+            <span data-lang-content="zh">Agent 模式</span>
+          </button>
+          <button class="tut-toggle-btn" id="btn-chat">
+            <span data-lang-content="en" class="is-visible">Direct Chat</span>
+            <span data-lang-content="zh">直聊模式</span>
+          </button>
         </div>
+
+        <p style="font-size:14px;margin-bottom:14px;" data-lang-content="en" class="is-visible">The toggle picks which mode the bar and the metric cards describe. The chart always plots both, so you can see the gap.</p>
+        <p style="font-size:14px;margin-bottom:14px;" data-lang-content="zh">这个开关决定下面的色条和指标卡描述哪种模式。折线图始终同时画两条，方便你看差距。</p>
 
         <div class="tut-slider-group">
           <div class="tut-slider-item">
-            <label>S₀ (system prompt tokens)</label>
+            <label>
+              <span data-lang-content="en" class="is-visible">S₀ — system prompt</span>
+              <span data-lang-content="zh">S₀ —— 系统提示词</span>
+            </label>
             <input type="range" id="sl-s0" min="50" max="2000" value="800" step="50">
             <span class="slider-val" id="val-s0">800</span>
           </div>
           <div class="tut-slider-item">
-            <label>U (user message tokens)</label>
+            <label>
+              <span data-lang-content="en" class="is-visible">U — user message</span>
+              <span data-lang-content="zh">U —— 用户消息</span>
+            </label>
             <input type="range" id="sl-u" min="20" max="500" value="100" step="10">
             <span class="slider-val" id="val-u">100</span>
           </div>
           <div class="tut-slider-item">
-            <label>R (reasoning tokens)</label>
+            <label>
+              <span data-lang-content="en" class="is-visible">R — reasoning</span>
+              <span data-lang-content="zh">R —— 推理</span>
+            </label>
             <input type="range" id="sl-r" min="50" max="2000" value="500" step="50">
             <span class="slider-val" id="val-r">500</span>
           </div>
           <div class="tut-slider-item">
-            <label>C (content tokens)</label>
-            <input type="range" id="sl-c" min="20" max="1000" value="200" step="20">
+            <label>
+              <span data-lang-content="en" class="is-visible">C — answer length</span>
+              <span data-lang-content="zh">C —— 回答长度</span>
+            </label>
+            <input type="range" id="sl-c" min="20" max="2000" value="200" step="20">
             <span class="slider-val" id="val-c">200</span>
           </div>
           <div class="tut-slider-item">
-            <label>T (tool call tokens)</label>
+            <label>
+              <span data-lang-content="en" class="is-visible">T — tool call</span>
+              <span data-lang-content="zh">T —— 工具调用</span>
+            </label>
             <input type="range" id="sl-t" min="0" max="500" value="80" step="10">
             <span class="slider-val" id="val-t">80</span>
           </div>
           <div class="tut-slider-item">
-            <label>TR (tool result tokens)</label>
+            <label>
+              <span data-lang-content="en" class="is-visible">TR — tool result</span>
+              <span data-lang-content="zh">TR —— 工具返回</span>
+            </label>
             <input type="range" id="sl-tr" min="0" max="1000" value="150" step="10">
             <span class="slider-val" id="val-tr">150</span>
           </div>
           <div class="tut-slider-item">
-            <label>n (current turn)</label>
+            <label>
+              <span data-lang-content="en" class="is-visible">n — current turn</span>
+              <span data-lang-content="zh">n —— 当前轮次</span>
+            </label>
             <input type="range" id="sl-n" min="1" max="30" value="10" step="1">
             <span class="slider-val" id="val-n">10</span>
           </div>
         </div>
 
         <!-- cache bar visualization -->
-        <p style="font-weight:700;font-size:14px;margin-bottom:4px;" data-lang-content="en" class="is-visible">GPU Memory Prefix Match:</p>
-        <p style="font-weight:700;font-size:14px;margin-bottom:4px;" data-lang-content="zh">GPU 显存前缀匹配：</p>
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;" data-lang-content="en" class="is-visible">What the GPU sees at turn n:</p>
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;" data-lang-content="zh">第 n 轮时 GPU 看到的东西：</p>
         <div class="cache-bar" id="cache-bar">
           <div class="cache-bar__hit" id="bar-hit" style="width:80%"></div>
           <div class="cache-bar__miss" id="bar-miss" style="width:15%"></div>
           <div class="cache-bar__discard" id="bar-discard" style="width:5%"></div>
         </div>
-        <div class="cache-bar-legend">
-          <span class="legend-hit">Hit (cached)</span>
-          <span class="legend-miss">Miss (new)</span>
-          <span class="legend-discard">Discarded (R in chat)</span>
+        <div class="cache-bar-legend" data-lang-content="en">
+          <span class="legend-hit">Prefix hit — billed at cache price</span>
+          <span class="legend-miss">Miss — billed at full input price</span>
+          <span class="legend-discard">Reasoning thrown away by the server</span>
+        </div>
+        <div class="cache-bar-legend" data-lang-content="zh">
+          <span class="legend-hit">前缀命中 —— 按缓存价计费</span>
+          <span class="legend-miss">未命中 —— 按全价输入计费</span>
+          <span class="legend-discard">被服务端丢掉的推理</span>
         </div>
 
         <!-- metrics -->
         <div class="tut-metrics" id="metrics">
           <div class="tut-metric">
             <div class="tut-metric__value" id="metric-total">9800</div>
-            <div class="tut-metric__label">Total Input Tokens</div>
+            <div class="tut-metric__label" data-lang-content="en">Total Input Tokens</div>
+            <div class="tut-metric__label" data-lang-content="zh">总输入 token</div>
           </div>
           <div class="tut-metric">
             <div class="tut-metric__value" id="metric-hit">94.2%</div>
-            <div class="tut-metric__label">Hit Rate</div>
+            <div class="tut-metric__label" data-lang-content="en">Hit Rate</div>
+            <div class="tut-metric__label" data-lang-content="zh">命中率</div>
           </div>
           <div class="tut-metric">
             <div class="tut-metric__value" id="metric-miss">100</div>
-            <div class="tut-metric__label">Missed Tokens</div>
+            <div class="tut-metric__label" data-lang-content="en">Missed Tokens</div>
+            <div class="tut-metric__label" data-lang-content="zh">未命中 token</div>
           </div>
         </div>
 
@@ -210,27 +428,60 @@
         <div class="tut-chart-wrap">
           <canvas id="hitrate-chart" height="280"></canvas>
         </div>
+
+        <p style="font-size:13.5px;margin:0;color:#7c6a52;" data-lang-content="en" class="is-visible">Turn 1 is always 0% — a cold start has nothing to match against.</p>
+        <p style="font-size:13.5px;margin:0;color:#7c6a52;" data-lang-content="zh">第 1 轮永远是 0% —— 冷启动没有任何东西可以匹配。</p>
       </div>
 
       <!-- Conclusions -->
       <div data-lang-content="en" class="is-visible">
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ Try the simulator above!</strong>
+          Set C (answer length) to 2000 and watch what happens to the Direct Chat hit rate. It sags hard, while the Agent curve barely notices. Then set R to 2000 and see the Agent curve climb even higher — long reasoning inflates the cached denominator.
+        </div>
+
         <h2>Four Conclusions</h2>
-        <ol>
-          <li><strong>Hit rate monotonically increases</strong> — As turns grow, the cached prefix dominates. Both modes trend toward 100%, but Agent mode gets there much faster.</li>
-          <li><strong>Context compression causes sudden drops</strong> — If you summarize old messages to save context window, the entire prefix changes and hit rate drops to near 0% (then rebuilds).</li>
-          <li><strong>Direct Chat: longer answers → lower hit rate</strong> — Each new C is a cache miss. If C is 1000 tokens vs 100 tokens, the difference is dramatic.</li>
-          <li><strong>Agent mode hit rate is significantly higher</strong> — Because reasoning (R) is preserved in the prefix, the only miss per turn is the tiny U. In Direct Chat, each turn misses both C and U.</li>
+        <ol class="tut-steps">
+          <li><strong>Hit rate climbs toward 100% as the conversation grows.</strong> The denominator grows every turn while the numerator stays about the same size, so the ratio can only go up. Long sessions are cheap sessions.</li>
+          <li><strong>Context compression resets the clock.</strong> Summarizing old turns rewrites the prefix, which invalidates the cache tree from that point on. On the chart, you fall back to turn 1 and start climbing again.</li>
+          <li><strong>Verbose models hurt Direct Chat.</strong> C₍ₙ₋₁₎ sits in the numerator, so a bigger answer is literally a bigger miss. Asking for concise answers is a cache optimization, not just a UX preference.</li>
+          <li><strong>Agent mode always beats Direct Chat.</strong> The miss is Uₙ instead of C₍ₙ₋₁₎ + Uₙ, over a larger total. Keeping reasoning in the history costs you nothing at cache prices and buys a cleaner prefix.</li>
         </ol>
+
+        <h2>Recap</h2>
+        <ul>
+          <li>Hit rate is one minus new tokens over total input tokens.</li>
+          <li>In Agent mode the only new tokens are Uₙ, so the rate approaches 100%.</li>
+          <li>In Direct Chat, stripping reasoning shifts C₍ₙ₋₁₎ forward and breaks the match there, so the miss is C₍ₙ₋₁₎ + Uₙ.</li>
+          <li>Anything that rewrites the prefix drops you back to a cold start.</li>
+        </ul>
+
+        <p>High hit rate means low cost. But exactly how low? Let's build the full cost formula.</p>
       </div>
 
       <div data-lang-content="zh">
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ 上面的模拟器动手试试！</strong>
+          把 C（回答长度）拉到 2000，看看直聊模式的命中率会怎样。它掉得很明显，而 Agent 那条曲线几乎无感。然后把 R 拉到 2000，你会看到 Agent 曲线还往上走了 —— 长推理把作为分母的缓存部分撑大了。
+        </div>
+
         <h2>四个结论</h2>
-        <ol>
-          <li><strong>命中率单调递增</strong>——随着轮次增加，缓存前缀占比越来越大。两种模式都趋向 100%，但 Agent 模式到达得快得多。</li>
-          <li><strong>上下文压缩导致突然下降</strong>——如果你为了省 context window 而对旧消息做摘要，整个前缀都变了，命中率跌到接近 0%（然后重新积累）。</li>
-          <li><strong>直聊模式：回答越长 → 命中率越低</strong>——每个新的 C 都是缓存未命中。C 是 1000 token 和 100 token 的差别巨大。</li>
-          <li><strong>Agent 模式命中率显著更高</strong>——因为推理（R）保留在前缀中，每轮唯一的未命中只有很小的 U。直聊模式每轮都要未命中 C 和 U。</li>
+        <ol class="tut-steps">
+          <li><strong>对话越长，命中率越接近 100%。</strong>分母每轮都在长，分子大小基本不变，比值只能往上走。长会话就是便宜的会话。</li>
+          <li><strong>上下文压缩会把时钟归零。</strong>给旧轮次做摘要就是在重写前缀，从那个位置往后整棵缓存树都失效。在图上，你会掉回第 1 轮，然后重新往上爬。</li>
+          <li><strong>话多的模型拖累直聊模式。</strong>C₍ₙ₋₁₎ 就在分子里，回答越长，未命中就越大。要求模型简洁不只是体验偏好，它本身就是一种缓存优化。</li>
+          <li><strong>Agent 模式永远优于直聊模式。</strong>未命中是 Uₙ 而不是 C₍ₙ₋₁₎ + Uₙ，而且分母还更大。把推理留在历史里，按缓存价算几乎不花钱，换来的是一条干净的前缀。</li>
         </ol>
+
+        <h2>小结</h2>
+        <ul>
+          <li>命中率等于 1 减去「新增 token / 总输入 token」。</li>
+          <li>Agent 模式下新增的只有 Uₙ，所以命中率趋近 100%。</li>
+          <li>直聊模式剥掉推理后，C₍ₙ₋₁₎ 的位置往前挪，匹配就断在那里，于是未命中是 C₍ₙ₋₁₎ + Uₙ。</li>
+          <li>任何重写前缀的操作都会把你打回冷启动。</li>
+        </ul>
+
+        <p>命中率高就意味着成本低。可到底低多少？下一节我们把完整的成本公式搭起来。</p>
       </div>
 
       <div class="tut-nav-footer">
@@ -259,6 +510,7 @@ document.addEventListener("DOMContentLoaded", function() {
       {left: "$$", right: "$$", display: true},
       {left: "$", right: "$", display: false}
     ],
+    ignoredClasses: ["tut-code"],
     throwOnError: false
   });
 
@@ -275,6 +527,16 @@ document.addEventListener("DOMContentLoaded", function() {
     tr: document.getElementById("sl-tr"),
     n: document.getElementById("sl-n")
   };
+
+  function labels() {
+    var zh = window.__xskillLang === "zh";
+    return {
+      agent: zh ? "Agent 模式" : "Agent Mode",
+      chat: zh ? "直聊模式" : "Direct Chat",
+      x: zh ? "轮次 n" : "Turn (n)",
+      y: zh ? "命中率 %" : "Hit Rate %"
+    };
+  }
 
   function getVals() {
     return {
@@ -318,6 +580,7 @@ document.addEventListener("DOMContentLoaded", function() {
   function update() {
     var v = getVals();
     var n = v.n;
+    var t = labels();
 
     // update slider displays
     Object.keys(sliders).forEach(function(k) {
@@ -348,29 +611,33 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // chart data
-    var labels = [];
+    var chartLabels = [];
     var agentData = [];
     var chatData = [];
     for (var i = 1; i <= 30; i++) {
-      labels.push(i);
+      chartLabels.push(i);
       agentData.push((agentHitRate(v, i) * 100).toFixed(1));
       chatData.push((chatHitRate(v, i) * 100).toFixed(1));
     }
 
     if (chart) {
-      chart.data.labels = labels;
+      chart.data.labels = chartLabels;
       chart.data.datasets[0].data = agentData;
+      chart.data.datasets[0].label = t.agent;
       chart.data.datasets[1].data = chatData;
+      chart.data.datasets[1].label = t.chat;
+      chart.options.scales.x.title.text = t.x;
+      chart.options.scales.y.title.text = t.y;
       chart.update();
     } else {
       var ctx = document.getElementById("hitrate-chart").getContext("2d");
       chart = new Chart(ctx, {
         type: "line",
         data: {
-          labels: labels,
+          labels: chartLabels,
           datasets: [
             {
-              label: "Agent Mode",
+              label: t.agent,
               data: agentData,
               borderColor: "#1f8a96",
               backgroundColor: "rgba(31,138,150,0.1)",
@@ -380,7 +647,7 @@ document.addEventListener("DOMContentLoaded", function() {
               pointRadius: 0
             },
             {
-              label: "Direct Chat",
+              label: t.chat,
               data: chatData,
               borderColor: "#ff7a5c",
               backgroundColor: "rgba(255,122,92,0.1)",
@@ -399,8 +666,8 @@ document.addEventListener("DOMContentLoaded", function() {
             tooltip: { mode: "index", intersect: false }
           },
           scales: {
-            x: { title: { display: true, text: "Turn (n)" } },
-            y: { title: { display: true, text: "Hit Rate %" }, min: 0, max: 100 }
+            x: { title: { display: true, text: t.x } },
+            y: { title: { display: true, text: t.y }, min: 0, max: 100 }
           }
         }
       });
@@ -423,6 +690,13 @@ document.addEventListener("DOMContentLoaded", function() {
     this.classList.add("is-active");
     document.getElementById("btn-agent").classList.remove("is-active");
     update();
+  });
+
+  // re-label the chart when the site language changes
+  document.addEventListener("click", function(e) {
+    if (e.target && e.target.closest && e.target.closest("[data-set-lang]")) {
+      setTimeout(update, 0);
+    }
   });
 
   update();

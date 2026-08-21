@@ -79,39 +79,203 @@
       <!-- ===== ENGLISH ===== -->
       <div data-lang-content="en" class="is-visible">
         <h1>What is a Skill</h1>
-        <p class="tut-subtitle">A Skill is a versioned, reusable instruction file that an AI agent can load and execute automatically.</p>
+        <p class="tut-subtitle">What if your agent could remember how to solve problems it's seen before? That's what a Skill is.</p>
 
-        <h2>More Than a Prompt Snippet</h2>
-        <p>Unlike a simple prompt snippet or a RAG document, a Skill is:</p>
-        <ol>
-          <li>Stored as a git repository with full version history — every change is tracked and reversible.</li>
-          <li>Structured with metadata (triggers, scope, dependencies) so the agent knows when and how to apply it.</li>
-          <li>Continuously improved through A/B testing and UX scoring — bad versions are automatically discarded, good ones survive.</li>
+        <h2>The Problem With Chat Logs</h2>
+        <p>Yesterday you and your agent spent twenty turns working out how to roll back a payment API safely: which region to switch first, how to tell a real recovery from a half-open one, when to stop. It worked, and the knowledge went into a chat log nobody will ever open again.</p>
+
+        <p>This morning a teammate hits the same incident. Their agent starts from zero and rediscovers the same lessons, one expensive turn at a time. The knowledge existed. It just wasn't in a form anything could load.</p>
+
+        <p>A <strong>Skill</strong> is that knowledge written down in a form an agent can load by itself: a markdown file that says what the procedure is, and metadata that says when it applies.</p>
+
+        <h2>What Makes It More Than a Note</h2>
+        <p>Three properties do the work here.</p>
+
+        <ol class="tut-steps">
+          <li><strong>It's versioned.</strong> Each Skill lives in its own git repository, so every edit has an author, a diff, and a way back. You can ask why a step exists and get an answer.</li>
+          <li><strong>It's self-selecting.</strong> The metadata carries a name, a description, and triggers, so the agent decides when to pull the Skill in. You don't paste it; you don't have to remember it exists.</li>
+          <li><strong>It's measured.</strong> New versions run against a slice of real traffic and get scored. A version that makes things worse loses and gets discarded, instead of quietly sitting in your prompt for six months.</li>
         </ol>
 
-        <h2>The Standard Format</h2>
-        <p>The standard format is <code>SKILL.md</code> — a markdown file that lives in a skill directory alongside any supporting scripts or reference files. Each skill directory is its own git repository, giving it independent version history.</p>
+        <p>There's a cost angle too, and it follows directly from chapter A. A Skill loads near the front of the message list where it is cached at $P_{cr}$ from the second turn onward, and it cuts the number of turns a task needs. Cheap tokens, fewer turns — both levers at once.</p>
 
-        <p class="doc-note">Coming soon: detailed Skill anatomy, metadata schema, and authoring guide.</p>
+        <h2>What One Looks Like</h2>
+        <p>A Skill is a directory containing a <code>SKILL.md</code>, plus any scripts or reference files the procedure needs. The file starts with YAML frontmatter and continues as ordinary markdown:</p>
+
+        <div class="tut-code"><span class="code-label">SKILL.md</span><code><span class="cmt">---</span>
+<span class="kw">name</span>: api-rollback-runbook
+<span class="kw">description</span>: Production API rollback runbook — half-open state probing,
+  multi-region switch order, and SLO burn estimation.
+<span class="kw">metadata</span>:
+  <span class="kw">version</span>: <span class="num">4</span>
+  <span class="kw">state</span>: staging
+  <span class="kw">domain</span>: sre
+  <span class="kw">tags</span>: [api, rollback, incident, canary]
+<span class="cmt">---</span>
+
+<span class="str"># api-rollback-runbook</span>
+
+<span class="str">## When to use this</span>
+
+A deploy is live, error rate is climbing, and you are deciding
+whether to roll back rather than how to fix forward.
+
+<span class="str">## Probing for half-open state</span>
+
+A rollback often looks recovered while some instances still run
+the bad version. Within 3–5 minutes of cutting traffic:
+
+1. Pull a histogram by instance version label; confirm the bad
+   version's weight is genuinely zero.
+2. Probe the same user_id five times in a row; watch for flapping.
+3. Compare the version header at edge against origin.
+
+<span class="str">## Multi-region order</span>
+
+Smallest region first, then primary, then the furthest backup.
+Never roll back regions in parallel.</code></div>
+
+        <p>Notice that it reads like a runbook a competent colleague would write, not like a prompt. That's deliberate: the audience is an agent that already speaks English, so the useful content is the judgement, the ordering, and the traps — not instructions on how to be helpful.</p>
+
+        <h2>How It Compares</h2>
+        <p>You've probably tried at least one of these already:</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>Approach</th><th>What it is</th><th>Where it falls short</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Prompt library</strong></td>
+              <td>Snippets you keep in a doc and paste when relevant</td>
+              <td>You have to remember it exists, and nobody knows which copy is current</td>
+            </tr>
+            <tr>
+              <td><strong>RAG</strong></td>
+              <td>Documents chunked and retrieved by similarity</td>
+              <td>Tuned for answering questions, not executing procedures; retrieval brings back three half-relevant chunks instead of one right one</td>
+            </tr>
+            <tr>
+              <td><strong>Workflow YAML</strong></td>
+              <td>Explicit steps and branches in a graph</td>
+              <td>Rigid — the moment reality differs from the graph, it stalls, and changing it needs an engineer</td>
+            </tr>
+            <tr>
+              <td><strong>Skill</strong></td>
+              <td>Versioned markdown procedure plus trigger metadata</td>
+              <td>Needs enough real trajectories before it's worth writing one</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>The honest summary: a Skill sits between a prompt snippet and a workflow. It's more durable and more discoverable than a snippet, and more flexible than a graph — the agent still gets to think, it just doesn't have to think from scratch.</p>
+
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ Try it out!</strong>
+          Open your last long agent session and look for the moment where you explained something you'd explained before. That paragraph is a Skill trying to get out.
+        </div>
+
+        <p class="doc-note">Coming soon: detailed anatomy of a Skill file — the full metadata schema, trigger design, and an authoring guide.</p>
+
+        <p>Next, let's look at where Skills actually earn their keep.</p>
       </div>
 
       <!-- ===== CHINESE ===== -->
       <div data-lang-content="zh">
         <h1>什么是 Skill</h1>
-        <p class="tut-subtitle">Skill 是一种带版本控制的、可复用的指令文件，AI agent 能自动加载并执行它。</p>
+        <p class="tut-subtitle">如果你的 Agent 能记住它以前解决过的问题，那会怎样？Skill 就是这件事。</p>
 
-        <h2>不只是一段 Prompt</h2>
-        <p>与简单的 prompt 片段或 RAG 文档不同，一个 Skill 具有以下特征：</p>
-        <ol>
-          <li>以 git 仓库存储，拥有完整版本历史——每次变更都可追踪、可回退。</li>
-          <li>带有结构化元数据（触发条件、作用范围、依赖关系），agent 知道何时以及如何应用它。</li>
-          <li>通过 A/B 测试和 UX 评分持续改进——差的版本自动淘汰，好的版本留存。</li>
+        <h2>聊天记录的问题</h2>
+        <p>昨天你和 Agent 花了二十轮，弄清楚怎么安全回滚支付 API：先切哪个 region、怎么分辨真恢复和半开状态、什么时候可以收手。事情办成了，而这些经验进了一份再也不会有人打开的聊天记录。</p>
+
+        <p>今天早上同事碰到同一个故障。他的 Agent 从零开始，一轮一轮地把同样的教训重新发现一遍，每一轮都要花钱。经验是存在的，只是没有以任何东西能加载的形式存在。</p>
+
+        <p>一个 <strong>Skill</strong>，就是把这些经验写成 Agent 自己能加载的形态：一个 markdown 文件写清流程是什么，一段元数据说明它什么时候适用。</p>
+
+        <h2>它凭什么不只是一篇笔记</h2>
+        <p>关键在三个属性。</p>
+
+        <ol class="tut-steps">
+          <li><strong>它有版本。</strong>每个 Skill 都在自己的 git 仓库里，所以每一次改动都有作者、有 diff、有回退路径。你可以追问某一步为什么存在，而且能得到答案。</li>
+          <li><strong>它自己会被选中。</strong>元数据里带着名字、描述和触发条件，所以是 Agent 决定什么时候把它拉进来。你不用粘贴，也不用记着它的存在。</li>
+          <li><strong>它被度量。</strong>新版本会在一小部分真实流量上跑并被打分。让效果变差的版本会落选、被淘汰，而不是悄悄在你的 prompt 里躺半年。</li>
         </ol>
 
-        <h2>标准格式</h2>
-        <p>标准格式是 <code>SKILL.md</code>——一个 markdown 文件，存放在技能目录中，旁边可以有辅助脚本或参考文件。每个技能目录本身就是一个独立的 git 仓库，拥有独立的版本历史。</p>
+        <p>还有一个成本角度，而且是 A 章的直接推论。Skill 加载在消息列表靠前的位置，从第二轮起就按 $P_{cr}$ 计费；同时它减少了一个任务需要的轮次。便宜的 token 加更少的轮次，两根杠杆一起动。</p>
 
-        <p class="doc-note">即将推出：Skill 结构详解、元数据 schema 和编写指南。</p>
+        <h2>它长什么样</h2>
+        <p>一个 Skill 是一个目录，里面有 <code>SKILL.md</code>，以及这个流程需要的脚本或参考文件。文件开头是 YAML frontmatter，往下就是普通 markdown：</p>
+
+        <div class="tut-code"><span class="code-label">SKILL.md</span><code><span class="cmt">---</span>
+<span class="kw">name</span>: api-rollback-runbook
+<span class="kw">description</span>: 生产 API 回滚 runbook：半开状态探测、多 region 切换顺序、
+  以及 SLO 烧损估算。
+<span class="kw">metadata</span>:
+  <span class="kw">version</span>: <span class="num">4</span>
+  <span class="kw">state</span>: staging
+  <span class="kw">domain</span>: sre
+  <span class="kw">tags</span>: [api, rollback, incident, canary]
+<span class="cmt">---</span>
+
+<span class="str"># api-rollback-runbook</span>
+
+<span class="str">## 什么时候用它</span>
+
+一次发布已经上线，错误率在往上走，你要决定的是回滚还是往前修。
+
+<span class="str">## 探测半开状态</span>
+
+回滚常见「看起来恢复、其实半开」：一部分实例仍是坏版本。
+缩流量后 3–5 分钟内完成：
+
+1. 按实例版本标签拉直方图，确认坏版本权重真实为 0。
+2. 对同一个 user_id 连续探测五次，看是否跳变。
+3. 对比 edge 与 origin 的版本头。
+
+<span class="str">## 多 region 顺序</span>
+
+先流量最小的 region，再主 region，最后最远的备份 region。
+禁止多 region 并行回滚。</code></div>
+
+        <p>注意它读起来像一个靠得住的同事写的操作手册，而不像一段 prompt。这是刻意的：读者是一个本来就懂中文的 Agent，所以真正有价值的内容是判断、次序和坑，而不是「请你乐于助人」这类交代。</p>
+
+        <h2>和其他做法比一比</h2>
+        <p>下面这几种你大概至少试过一种：</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>做法</th><th>是什么</th><th>短板在哪</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Prompt 库</strong></td>
+              <td>攒在文档里、需要时粘贴的片段</td>
+              <td>你得记得它存在，而且没人知道哪份拷贝是最新的</td>
+            </tr>
+            <tr>
+              <td><strong>RAG</strong></td>
+              <td>把文档切块，按相似度检索</td>
+              <td>它是为回答问题调的，不是为执行流程调的；检索常常捞回三段半相关的，而不是一段对的</td>
+            </tr>
+            <tr>
+              <td><strong>工作流 YAML</strong></td>
+              <td>把步骤和分支画成显式的图</td>
+              <td>太死 —— 现实一旦和图不一样就卡住，而改图得找工程师</td>
+            </tr>
+            <tr>
+              <td><strong>Skill</strong></td>
+              <td>带版本的 markdown 流程，加上触发元数据</td>
+              <td>得先有足够多的真实轨迹，才值得写一条</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>老实说：Skill 的位置在 prompt 片段和工作流之间。它比片段更持久、更容易被找到，又比图更灵活 —— Agent 仍然可以思考，只是不必从零开始想。</p>
+
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ 动手试试！</strong>
+          打开你最近一次的长会话，找一找那个「你又解释了一遍以前解释过的东西」的时刻。那一段就是一个想要破壳而出的 Skill。
+        </div>
+
+        <p class="doc-note">即将推出：Skill 文件结构详解 —— 完整的元数据 schema、触发条件设计，以及编写指南。</p>
+
+        <p>下一节我们看看 Skill 到底在什么地方真正值这个钱。</p>
       </div>
 
       <div class="tut-nav-footer">
@@ -139,6 +303,7 @@ document.addEventListener("DOMContentLoaded", function() {
       {left: "$$", right: "$$", display: true},
       {left: "$", right: "$", display: false}
     ],
+    ignoredClasses: ["tut-code"],
     throwOnError: false
   });
 });

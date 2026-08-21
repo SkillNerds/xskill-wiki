@@ -572,6 +572,150 @@
   overflow-y: hidden;
 }
 
+/* ---- Tip / try-it-out box (HF-course style) ---- */
+.tut-callout--tip {
+  background: linear-gradient(180deg, #eefaf3, #e2f6ea);
+  border-left: 4px solid var(--palm);
+}
+.tut-callout--tip strong { color: var(--palm-deep); }
+.tut-callout--key {
+  background: linear-gradient(180deg, #fff6e6, #ffeecd);
+  border-left: 4px solid var(--sun);
+}
+.tut-callout--key strong { color: var(--coco-deep); }
+
+/* ---- Output blocks (code → output → explanation) ---- */
+.tut-code--output {
+  background: #14141f;
+  border-color: #2b3540;
+  box-shadow: 0 10px 22px -16px rgba(0,0,0,.5);
+}
+.tut-code--output code { color: #b9c2d0; }
+.tut-code--output .code-label { color: #8b93a7; }
+.tut-code--error { border-color: #7a3b34; }
+.tut-code--error code { color: #f5a49a; }
+.tut-io-label {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: #f3e6cd;
+  border-radius: 999px;
+  padding: 3px 12px;
+  margin: 14px 0 -4px;
+}
+
+/* ---- Token sequence chips (prefix-match visual) ---- */
+.tok-seq {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin: 10px 0;
+  padding: 12px 14px;
+  background: #fffaf0;
+  border: 1px dashed #e9d4a6;
+  border-radius: var(--radius-sm);
+}
+.tok {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 800;
+  border: 1px solid rgba(0,0,0,.08);
+}
+.tok--hit    { background: #cdf3e0; color: #1f7d52; }
+.tok--new    { background: #fdeeb8; color: #8a6414; }
+.tok--drop   { background: #e7e5e4; color: #78716c; text-decoration: line-through; }
+.tok--broken { background: #ffdcd4; color: #b8452c; }
+.tok-arrow { color: var(--ink-soft); font-weight: 800; padding: 0 2px; }
+.tok-turn-label {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  font-family: var(--font-display);
+  min-width: 62px;
+}
+.tok-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin: 4px 0 18px;
+}
+.tok-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 12px; height: 12px;
+  border-radius: 3px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.tok-legend .lg-hit::before    { background: #6ee7a8; }
+.tok-legend .lg-new::before    { background: #facc15; }
+.tok-legend .lg-drop::before   { background: #a1a1aa; }
+.tok-legend .lg-broken::before { background: #ff7a5c; }
+
+/* ---- Numbered step list ---- */
+.tut-article ol.tut-steps { counter-reset: step; list-style: none; padding-left: 0; }
+.tut-article ol.tut-steps > li {
+  counter-increment: step;
+  position: relative;
+  padding: 2px 0 2px 42px;
+  margin-bottom: 12px;
+}
+.tut-article ol.tut-steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0; top: 0;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--sea-light), var(--sea));
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: var(--inset-top), 0 3px 7px -3px rgba(19,103,114,.6);
+}
+
+/* ---- Worked example box ---- */
+.tut-worked {
+  margin: 18px 0 24px;
+  padding: 18px 20px;
+  background: #fffdf8;
+  border: 1px solid #f0d9ad;
+  border-left: 4px solid var(--sea);
+  border-radius: var(--radius-sm);
+}
+.tut-worked h4 {
+  font-size: 16px;
+  color: var(--sea-deep);
+  margin-bottom: 10px;
+}
+.tut-worked table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.tut-worked td { padding: 6px 4px; border-bottom: 1px dashed #f1e3c6; }
+.tut-worked td:last-child { text-align: right; font-weight: 800; color: var(--coco-deep); white-space: nowrap; }
+.tut-worked tr:last-child td { border-bottom: none; border-top: 2px solid #e9d4a6; color: var(--coral-deep); }
+
+/* ---- Inline bilingual spans (inside buttons, labels, table cells) ---- */
+span[data-lang-content].is-visible,
+label[data-lang-content].is-visible,
+td[data-lang-content].is-visible,
+th[data-lang-content].is-visible { display: inline; }
+div.tut-metric__label[data-lang-content].is-visible { display: block; }
+div.cache-bar-legend[data-lang-content].is-visible { display: flex; }
+
 /* Responsive */
 @media (max-width: 980px) {
   .tutorial-shell {

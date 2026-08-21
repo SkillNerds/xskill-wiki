@@ -10,6 +10,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥥</text></svg>" />
 <link rel="stylesheet" href="../styles.css" />
 <link rel="stylesheet" href="tutorial-styles.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
 </head>
 <body>
 
@@ -78,153 +79,351 @@
       <!-- ===== ENGLISH ===== -->
       <div data-lang-content="en" class="is-visible">
         <h1>What is KV Cache</h1>
-        <p class="tut-subtitle">Understand the mechanism that makes repeated API calls cheaper and faster — and why it matters for Agent workflows.</p>
+        <p class="tut-subtitle">Every time you send a message to an LLM, the server needs to process ALL previous tokens in the conversation. For a 10-turn chat, that's a lot of repeated work. KV Cache is the trick that makes this bearable.</p>
 
-        <h2>The Problem: Redundant Computation</h2>
-        <p>Every time you send a request to a language model, the server must compute attention across ALL tokens in your input. For a 10-turn conversation, that means re-processing everything from the system prompt through all previous messages — even though most of that hasn't changed since last time.</p>
-        <p>This is like re-downloading an entire website every time you click a link, even though 95% of the page is identical.</p>
-
-        <h2>The Solution: KV Cache</h2>
-        <p>KV Cache (Key-Value Cache) stores the intermediate attention computation results on GPU memory. When your next request arrives, the server checks: "Does the beginning of this new request match something I've already computed?"</p>
-        <p>If yes — those tokens are served from cache. No re-computation needed.</p>
+        <p>Remember the <code>usage</code> block at the end of the last section? It said 4,736 of our 4,820 input tokens were "cache hits". In this section we'll find out what that actually means.</p>
 
         <div class="tut-callout tut-callout--info">
-          <strong>Analogy:</strong> Think of it like a browser cache for web pages. If the HTML didn't change, the browser doesn't re-download it — it serves from the local cache. KV Cache does the same thing for GPU attention computation.
+          <strong>Analogy</strong>
+          Think of it like watching a movie. Without cache, you'd rewind to the beginning every time you want to see the next scene. With cache, you just press play.
         </div>
 
-        <h2>Longest Common Prefix Matching</h2>
-        <p>The cache uses a "longest common prefix" strategy. It compares the token sequence of your new request against cached sequences, starting from the very first token. The match must be contiguous from the beginning — a matching suffix or middle section doesn't count.</p>
+        <h2>1. What Gets Cached</h2>
+        <p>Inside the model, every token gets projected into three vectors: a <strong>Query</strong>, a <strong>Key</strong>, and a <strong>Value</strong>. Attention works by having each new token's Query look at the Keys and Values of every token before it.</p>
 
-        <div class="tut-code"><code><span class="cmt"># Request at Turn 1:</span>
-[S₀ | U₀]  →  all computed fresh
+        <p>Here's the useful part: a token's Key and Value depend only on that token and the tokens before it. They never change when new text is appended later. So they can be computed once and kept — that stored pile of K and V matrices <em>is</em> the KV Cache.</p>
 
-<span class="cmt"># Request at Turn 2:</span>
-[S₀ | U₀ | C₁ | U₁]
- ↑ cached ↑    ↑ new ↑
+        <div class="tut-code"><span class="code-label">pseudocode</span><code><span class="cmt"># Without cache — project every token, every request</span>
+<span class="kw">for</span> token <span class="kw">in</span> all_tokens:          <span class="cmt"># 4,820 tokens</span>
+    k, v = project(token)         <span class="cmt"># ← recomputed from scratch</span>
 
-<span class="cmt"># Request at Turn 3:</span>
-[S₀ | U₀ | C₁ | U₁ | C₂ | U₂]
- ↑────── cached ──────↑  ↑new↑</code></div>
+<span class="cmt"># With cache — only the new tail does real work</span>
+<span class="kw">for</span> token <span class="kw">in</span> cached_prefix:       <span class="cmt"># 4,736 tokens</span>
+    k, v = cache.lookup(token)    <span class="cmt"># ← already on the GPU</span>
+<span class="kw">for</span> token <span class="kw">in</span> new_tail:            <span class="cmt"># 84 tokens</span>
+    k, v = project(token)         <span class="cmt"># ← the only real computation</span></code></div>
 
-        <p>The longer the shared prefix, the more computation is reused.</p>
+        <p>The saving is not marginal. In that example the server did real work on 84 tokens instead of 4,820 — roughly 1.7% of the original cost.</p>
 
-        <h2>64-Token Block Alignment</h2>
-        <p>In practice, KV Cache operates in chunks (commonly 64 tokens). The cache hit is aligned to block boundaries — if your prefix is 100 tokens long, 96 tokens (1.5 blocks) are cached, and the remaining 4 tokens plus new content are computed fresh.</p>
-        <p>This means very short prefixes (under 64 tokens) may not benefit much from caching.</p>
+        <h2>2. How Prefix Matching Works</h2>
+        <p>Now, how does the server know which tokens it has already seen? It keeps cached sequences in a <strong>tree</strong>, and it walks your new request against that tree from the very first token.</p>
 
-        <h2>Why This Matters: Cost and Speed</h2>
-        <p>Cached tokens bring two advantages:</p>
-        <ol>
-          <li><strong>Lower cost</strong> — API providers charge significantly less for cached input tokens (often 1/10th to 1/30th the price of uncached tokens).</li>
-          <li><strong>Lower latency</strong> — No computation means faster time-to-first-token. The prefix section is essentially "free" from a compute standpoint.</li>
+        <p>The rule is simple, and strict:</p>
+
+        <ol class="tut-steps">
+          <li>Start at token 0 and compare.</li>
+          <li>Keep walking while tokens match.</li>
+          <li>Stop at the first difference. Everything from there on is computed fresh.</li>
         </ol>
 
-        <div class="tut-callout tut-callout--warn">
-          <strong>The flip side:</strong> If you modify the beginning of your message list (e.g., change the system prompt, insert a new instruction before old messages), the entire prefix changes and cache is invalidated. This is why message ordering and immutability matter for cost optimization.
+        <p>This is called <strong>longest common prefix</strong> matching. The match has to be contiguous from the start — a chunk that matches in the middle of your request is worth nothing.</p>
+
+        <p>Let's watch it happen over three turns of a simple chat:</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">Turn 1</span>
+          <span class="tok tok--new">S₀</span>
+          <span class="tok tok--new">U₀</span>
+        </div>
+        <div class="tok-seq">
+          <span class="tok-turn-label">Turn 2</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">U₀</span>
+          <span class="tok tok--new">C₁</span>
+          <span class="tok tok--new">U₁</span>
+        </div>
+        <div class="tok-seq">
+          <span class="tok-turn-label">Turn 3</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">U₀</span>
+          <span class="tok tok--hit">C₁</span>
+          <span class="tok tok--hit">U₁</span>
+          <span class="tok tok--new">C₂</span>
+          <span class="tok tok--new">U₂</span>
+        </div>
+        <div class="tok-legend">
+          <span class="lg-hit">Served from cache</span>
+          <span class="lg-new">Computed fresh</span>
         </div>
 
-        <h2>What Breaks the Cache</h2>
+        <p>Turn 1 is a cold start: nothing to match, everything is computed. From then on, the green region grows and the yellow tail stays about the same size. That's the whole game.</p>
+
+        <p>Now here's what a <em>bad</em> request looks like. We changed one word in the system prompt:</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">Turn 3′</span>
+          <span class="tok tok--broken">S₀′</span>
+          <span class="tok tok--broken">U₀</span>
+          <span class="tok tok--broken">C₁</span>
+          <span class="tok tok--broken">U₁</span>
+          <span class="tok tok--broken">C₂</span>
+          <span class="tok tok--broken">U₂</span>
+        </div>
+        <div class="tok-legend">
+          <span class="lg-broken">Cache invalid — recomputed at full price</span>
+        </div>
+
+        <p>The mismatch happens at token 0, so the walk stops immediately and the entire request is recomputed. U₀, C₁, U₁ and the rest are byte-for-byte identical to last time, and it doesn't help them one bit — their position in the sequence changed the moment the prefix changed.</p>
+
+        <h2>3. Block Alignment: Pages in a Book</h2>
+        <p>One detail before we do arithmetic. The cache doesn't store tokens one at a time; it stores them in fixed-size blocks, commonly <strong>64 tokens</strong> each. Think of pages in a book — you can bookmark a page, not a single word.</p>
+
+        <p>So a hit is always rounded down to a whole number of blocks:</p>
+
+        <div class="tut-code"><span class="code-label">python</span><code>BLOCK = <span class="num">64</span>
+matching_prefix = <span class="num">4820</span>
+
+usable_blocks = matching_prefix // BLOCK   <span class="cmt"># 75 blocks</span>
+cached_tokens = usable_blocks * BLOCK      <span class="cmt"># 4800 tokens</span>
+leftover      = matching_prefix % BLOCK    <span class="cmt"># 20 tokens, recomputed</span></code></div>
+
+        <p>Two practical consequences. First, a prefix shorter than 64 tokens caches nothing at all. Second, on long conversations the leftover is rounding noise — losing up to 63 tokens out of 4,800 doesn't change your bill.</p>
+
+        <h2>4. Putting Numbers On It</h2>
+        <p>Imagine a 3-turn conversation with an 800-token system prompt, 100-token user messages, and 200-token answers:</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>Turn</th><th>Input sequence</th><th>Total</th><th>Cached</th><th>Fresh</th><th>Hit rate</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1</strong></td><td>S₀ + U₀</td><td>900</td><td>0</td><td>900</td><td>0%</td></tr>
+            <tr><td><strong>2</strong></td><td>S₀ + U₀ + C₁ + U₁</td><td>1,200</td><td>900</td><td>300</td><td>75%</td></tr>
+            <tr><td><strong>3</strong></td><td>S₀ + U₀ + C₁ + U₁ + C₂ + U₂</td><td>1,500</td><td>1,200</td><td>300</td><td>80%</td></tr>
+            <tr><td><strong>10</strong></td><td>… seven more turns …</td><td>3,600</td><td>3,300</td><td>300</td><td>91.7%</td></tr>
+          </tbody>
+        </table>
+
+        <p>Watch the two right-hand columns. The fresh work per turn is flat at 300 tokens, while the cached region keeps growing. Long conversations are where caching pays off most.</p>
+
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ Think about it!</strong>
+          If you change your system prompt between turns, what happens to the cache? (Hint: the entire prefix becomes invalid.) That's why "let me just append today's date to the system prompt" is a surprisingly expensive habit.
+        </div>
+
+        <h2>5. Why This Shows Up on Your Invoice</h2>
+        <p>A cached token costs the provider almost nothing — the GPU work was done and paid for on an earlier request. Providers pass that through with a separate, much lower price.</p>
+
+        <div class="tut-callout tut-callout--key">
+          <strong>Key insight</strong>
+          This is why providers charge LESS for cached tokens — they cost less to compute.
+        </div>
+
+        <p>Here is DeepSeek's off-peak pricing for <code>deepseek-v4-flash</code>, per million tokens:</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>Token type</th><th>Symbol</th><th>Price / M tokens</th><th>Relative</th></tr></thead>
+          <tbody>
+            <tr><td>Input, cache hit</td><td><strong>P<sub>cr</sub></strong></td><td>0.05 ¥</td><td>1×</td></tr>
+            <tr><td>Input, cache miss</td><td><strong>P<sub>i</sub></strong></td><td>1.50 ¥</td><td>30× more</td></tr>
+            <tr><td>Output</td><td><strong>P<sub>o</sub></strong></td><td>4.50 ¥</td><td>90× more</td></tr>
+          </tbody>
+        </table>
+
+        <p>Thirty times cheaper. Take turn 10 from the table above — 3,300 cached tokens. Across 1,000 requests, that prefix costs 0.165 ¥ at the cache price versus 4.95 ¥ at the full input price.</p>
+
+        <p>And you get latency for free: no computation means a faster first token, which is exactly the part users feel.</p>
+
+        <h2>6. What Breaks the Cache</h2>
+        <p>Anything that changes the token sequence at or before position <em>k</em> invalidates everything from <em>k</em> onward:</p>
         <ul>
-          <li>Changing any token in the prefix (even one character in the system prompt)</li>
-          <li>Reordering messages</li>
-          <li>Context compression (summarizing old messages breaks the token sequence)</li>
-          <li>Switching to a different model endpoint</li>
-          <li>Cache eviction due to GPU memory pressure (high traffic periods)</li>
+          <li>Editing the system prompt — even one character, even a timestamp.</li>
+          <li>Reordering or deleting earlier messages.</li>
+          <li>Context compression: summarizing old turns rewrites the prefix and resets you to a cold start.</li>
+          <li>Switching model or endpoint — different weights, different cache.</li>
+          <li>Eviction. GPU memory is finite and caches expire; under heavy traffic a long-idle conversation may simply be gone.</li>
         </ul>
 
-        <h2>Agent Mode vs Direct Chat: Cache Implications</h2>
-        <p>Now here's the connection to the previous tutorial:</p>
+        <p>The pattern worth remembering: <strong>append-only conversations are cache-friendly; edited conversations are not.</strong></p>
+
+        <h2>7. Why Agent Mode Has an Advantage</h2>
+        <p>This is where the last section connects. In Agent mode the history is strictly append-only — S₀, U₀, R₁, C₁, T₁, TR₁, U₁, R₂, … — and nothing already sent is ever rewritten. The prefix from the previous request is still a prefix of this one, so the match runs almost to the end.</p>
+
+        <p>Direct Chat is nearly append-only, but not quite, and the gap costs you. We'll see exactly where it leaks in the next section.</p>
+
+        <h2>Recap</h2>
         <ul>
-          <li>In <strong>Agent mode</strong>, messages are strictly append-only: S₀ + U₀ + R₁ + C₁ + T₁ + TR₁ + U₁ + R₂ + C₂ + ... — the prefix never changes, so cache hit rate approaches 100% over many turns.</li>
-          <li>In <strong>Direct Chat</strong>, the server strips reasoning (R), so the sequence seen by the cache is: S₀ + U₀ + C₁ + U₁ + C₂ + U₂ + ... — still append-only, but with a gap. When the client sends the full message (including R which the server discards), the token sequence may differ from what's cached, causing partial misses.</li>
+          <li>KV Cache stores the Key and Value matrices of past tokens on the GPU so they never have to be recomputed.</li>
+          <li>Matching is longest-common-prefix: it starts at token 0 and stops at the first difference.</li>
+          <li>Hits are rounded down to 64-token blocks, so very short prefixes gain nothing.</li>
+          <li>Cached input tokens cost about 1/30 of fresh ones, and arrive faster.</li>
+          <li>Anything that rewrites the prefix — especially context compression — resets you to a cold start.</li>
         </ul>
 
-        <p>We'll quantify this difference precisely in the next tutorial.</p>
-
-        <h2>Summary</h2>
-        <ul>
-          <li>KV Cache stores attention computations on GPU memory to avoid redundant work.</li>
-          <li>It uses longest-common-prefix matching — only the beginning of your request can be cached.</li>
-          <li>Cache operates in 64-token blocks.</li>
-          <li>Cached tokens are cheaper (1/10–1/30 price) and faster (no recomputation).</li>
-          <li>Agent mode's append-only structure is naturally cache-friendly; Direct Chat less so.</li>
-        </ul>
+        <p>So caching saves money. But how much exactly? That depends on the cache hit rate — which is what we'll calculate next.</p>
       </div>
 
       <!-- ===== CHINESE ===== -->
       <div data-lang-content="zh">
         <h1>什么是 KV Cache</h1>
-        <p class="tut-subtitle">理解让重复 API 调用更便宜、更快的机制——以及它为什么对 Agent 工作流至关重要。</p>
+        <p class="tut-subtitle">你每发一条消息，服务端都得把这段对话里之前的所有 token 重新处理一遍。一个十轮对话，重复的活儿相当可观。KV Cache 就是让这件事变得可以接受的那个技巧。</p>
 
-        <h2>问题：冗余计算</h2>
-        <p>每次你向语言模型发送请求，服务端都必须对输入中的所有 token 做注意力计算。一个 10 轮对话意味着：从系统提示词到所有历史消息，全部重新处理一遍——尽管其中大部分从上次以来根本没变。</p>
-        <p>这就像每次点一个链接都重新下载整个网站，尽管 95% 的内容和上次一模一样。</p>
-
-        <h2>解决方案：KV Cache</h2>
-        <p>KV Cache（Key-Value 缓存）在 GPU 显存中保存中间的注意力计算结果。当下一个请求到来时，服务端会检查："新请求的开头是否和我已经算过的东西匹配？"</p>
-        <p>如果匹配——那些 token 直接从缓存中读取，不需要重新计算。</p>
+        <p>还记得上一节结尾那个 <code>usage</code> 块吗？4820 个输入 token 里有 4736 个是「缓存命中」。这一节就来看看这句话到底是什么意思。</p>
 
         <div class="tut-callout tut-callout--info">
-          <strong>类比：</strong>把它想成浏览器缓存。如果 HTML 没变，浏览器不会重新下载——直接从本地缓存提供。KV Cache 对 GPU 注意力计算做的是同样的事。
+          <strong>类比</strong>
+          想象你在看电影。没有缓存的话，每想看下一个镜头都得先倒回片头重放一遍；有缓存，你直接按播放就行。
         </div>
 
-        <h2>最长公共前缀匹配</h2>
-        <p>缓存使用"最长公共前缀"策略。它从第一个 token 开始，逐个比较新请求的 token 序列与缓存中的序列。匹配必须从开头连续——中间或末尾的匹配不算。</p>
+        <h2>1. 被缓存的到底是什么</h2>
+        <p>在模型内部，每个 token 都会被投影成三个向量：<strong>Query</strong>、<strong>Key</strong> 和 <strong>Value</strong>。注意力机制的工作方式，是让每个新 token 的 Query 去看它前面所有 token 的 Key 和 Value。</p>
 
-        <div class="tut-code"><code><span class="cmt"># 第 1 轮的请求：</span>
-[S₀ | U₀]  →  全部重新计算
+        <p>关键在这里：一个 token 的 Key 和 Value 只取决于它本身以及它前面的内容。后面再追加多少文字，它们都不会变。所以它们完全可以算一次然后留着 —— 存下来的这一堆 K、V 矩阵，就是 KV Cache。</p>
 
-<span class="cmt"># 第 2 轮的请求：</span>
-[S₀ | U₀ | C₁ | U₁]
- ↑ 缓存命中 ↑  ↑ 新的 ↑
+        <div class="tut-code"><span class="code-label">伪代码</span><code><span class="cmt"># 没有缓存 —— 每次请求都把所有 token 重新投影一遍</span>
+<span class="kw">for</span> token <span class="kw">in</span> all_tokens:          <span class="cmt"># 4820 个 token</span>
+    k, v = project(token)         <span class="cmt"># ← 从零重算</span>
 
-<span class="cmt"># 第 3 轮的请求：</span>
-[S₀ | U₀ | C₁ | U₁ | C₂ | U₂]
- ↑────── 缓存命中 ──────↑  ↑新↑</code></div>
+<span class="cmt"># 有缓存 —— 只有新增的尾巴需要真算</span>
+<span class="kw">for</span> token <span class="kw">in</span> cached_prefix:       <span class="cmt"># 4736 个 token</span>
+    k, v = cache.lookup(token)    <span class="cmt"># ← 已经在 GPU 上了</span>
+<span class="kw">for</span> token <span class="kw">in</span> new_tail:            <span class="cmt"># 84 个 token</span>
+    k, v = project(token)         <span class="cmt"># ← 唯一真正的计算</span></code></div>
 
-        <p>共享前缀越长，复用的计算越多。</p>
+        <p>这个节省不是一点点。上面这个例子里，服务端真正干活的是 84 个 token，而不是 4820 个，大约是原来的 1.7%。</p>
 
-        <h2>64-Token 块对齐</h2>
-        <p>实际上，KV Cache 按块操作（通常是 64 个 token 一块）。缓存命中会对齐到块边界——如果你的前缀有 100 个 token，那么 96 个 token（1.5 个块）被缓存命中，剩下的 4 个 token 加上新内容需要重新计算。</p>
-        <p>这意味着非常短的前缀（少于 64 token）可能从缓存中获益不大。</p>
+        <h2>2. 前缀匹配是怎么工作的</h2>
+        <p>那服务端怎么知道哪些 token 它见过？它把缓存过的序列组织成一棵<strong>树</strong>，然后拿你的新请求从第一个 token 开始，沿着这棵树往下走。</p>
 
-        <h2>为什么重要：成本与速度</h2>
-        <p>缓存命中的 token 带来两个好处：</p>
-        <ol>
-          <li><strong>更低的费用</strong>——API 提供商对缓存命中的输入 token 收费显著更低（通常是未命中价格的 1/10 到 1/30）。</li>
-          <li><strong>更低的延迟</strong>——不需要计算意味着更快的首 token 返回时间。前缀部分在计算角度基本上是"免费的"。</li>
+        <p>规则很简单，也很死板：</p>
+
+        <ol class="tut-steps">
+          <li>从第 0 个 token 开始比。</li>
+          <li>只要对得上就继续往下走。</li>
+          <li>在第一个不一样的地方停住。从那里往后全部重新计算。</li>
         </ol>
 
-        <div class="tut-callout tut-callout--warn">
-          <strong>反面：</strong>如果你修改了消息列表的开头（比如改了系统提示词、在旧消息前面插入新指令），整个前缀都会变化，缓存全部失效。这就是为什么消息顺序和不可变性对成本优化很重要。
+        <p>这叫<strong>最长公共前缀</strong>匹配。匹配必须从头开始连续 —— 请求中间某一段恰好一样，一点用都没有。</p>
+
+        <p>拿一段三轮的普通对话看看它是怎么发生的：</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">第 1 轮</span>
+          <span class="tok tok--new">S₀</span>
+          <span class="tok tok--new">U₀</span>
+        </div>
+        <div class="tok-seq">
+          <span class="tok-turn-label">第 2 轮</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">U₀</span>
+          <span class="tok tok--new">C₁</span>
+          <span class="tok tok--new">U₁</span>
+        </div>
+        <div class="tok-seq">
+          <span class="tok-turn-label">第 3 轮</span>
+          <span class="tok tok--hit">S₀</span>
+          <span class="tok tok--hit">U₀</span>
+          <span class="tok tok--hit">C₁</span>
+          <span class="tok tok--hit">U₁</span>
+          <span class="tok tok--new">C₂</span>
+          <span class="tok tok--new">U₂</span>
+        </div>
+        <div class="tok-legend">
+          <span class="lg-hit">从缓存读取</span>
+          <span class="lg-new">重新计算</span>
         </div>
 
-        <h2>什么会打破缓存</h2>
+        <p>第 1 轮是冷启动：没东西可匹配，全部都要算。从第 2 轮开始，绿色区域越来越长，而黄色的尾巴大小基本不变。整件事的窍门就在这儿。</p>
+
+        <p>再看一个<em>糟糕</em>的请求长什么样。我们只改了系统提示词里的一个词：</p>
+
+        <div class="tok-seq">
+          <span class="tok-turn-label">第 3′ 轮</span>
+          <span class="tok tok--broken">S₀′</span>
+          <span class="tok tok--broken">U₀</span>
+          <span class="tok tok--broken">C₁</span>
+          <span class="tok tok--broken">U₁</span>
+          <span class="tok tok--broken">C₂</span>
+          <span class="tok tok--broken">U₂</span>
+        </div>
+        <div class="tok-legend">
+          <span class="lg-broken">缓存失效，按全价重算</span>
+        </div>
+
+        <p>不匹配发生在第 0 个 token，所以匹配立刻中断，整个请求全部重算。U₀、C₁、U₁ 这些内容跟上一次一个字节都没差，也救不了它们 —— 前缀一变，它们在序列里的位置就全变了。</p>
+
+        <h2>3. 块对齐：书里的页</h2>
+        <p>算数之前还有个细节。缓存不是一个 token 一个 token 存的，而是按固定大小的块存，常见是 <strong>64 个 token</strong> 一块。可以想成书里的页：你能夹一个书签标到某一页，但标不到某一个字。</p>
+
+        <p>所以命中长度总是向下取整到整数个块：</p>
+
+        <div class="tut-code"><span class="code-label">python</span><code>BLOCK = <span class="num">64</span>
+matching_prefix = <span class="num">4820</span>
+
+usable_blocks = matching_prefix // BLOCK   <span class="cmt"># 75 块</span>
+cached_tokens = usable_blocks * BLOCK      <span class="cmt"># 4800 个 token</span>
+leftover      = matching_prefix % BLOCK    <span class="cmt"># 20 个 token，要重算</span></code></div>
+
+        <p>两个实际后果。第一，不到 64 个 token 的前缀，一点缓存都吃不到。第二，长对话里这个零头就是舍入噪声 —— 4800 里最多丢 63 个，账单上看不出来。</p>
+
+        <h2>4. 把数字填进去</h2>
+        <p>假设一段三轮对话：系统提示词 800 token，每条用户消息 100 token，每条回答 200 token：</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>轮次</th><th>输入序列</th><th>总量</th><th>命中</th><th>新算</th><th>命中率</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1</strong></td><td>S₀ + U₀</td><td>900</td><td>0</td><td>900</td><td>0%</td></tr>
+            <tr><td><strong>2</strong></td><td>S₀ + U₀ + C₁ + U₁</td><td>1,200</td><td>900</td><td>300</td><td>75%</td></tr>
+            <tr><td><strong>3</strong></td><td>S₀ + U₀ + C₁ + U₁ + C₂ + U₂</td><td>1,500</td><td>1,200</td><td>300</td><td>80%</td></tr>
+            <tr><td><strong>10</strong></td><td>…… 再走七轮 ……</td><td>3,600</td><td>3,300</td><td>300</td><td>91.7%</td></tr>
+          </tbody>
+        </table>
+
+        <p>盯着右边两列看。每轮新算的量一直是 300 token，而命中的区域越来越大。对话越长，缓存的收益越明显。</p>
+
+        <div class="tut-callout tut-callout--tip">
+          <strong>✏️ 想一想！</strong>
+          如果你在两轮之间改了系统提示词，缓存会怎样？（提示：整个前缀都失效了。）这就是为什么「顺手在系统提示词里塞一个今天的日期」是个出乎意料地贵的习惯。
+        </div>
+
+        <h2>5. 为什么这会出现在账单上</h2>
+        <p>一个命中缓存的 token，对服务商来说几乎不花成本 —— GPU 的活在更早的某次请求里就已经干完并且收过钱了。这部分省下来的成本，服务商用一个单独的、低得多的价格传导给你。</p>
+
+        <div class="tut-callout tut-callout--key">
+          <strong>关键结论</strong>
+          这就是为什么服务商对命中缓存的 token 收费更低 —— 它们的计算成本本来就低。
+        </div>
+
+        <p>下面是 DeepSeek <code>deepseek-v4-flash</code> 空闲时段的价格，单位是每百万 token：</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>token 类型</th><th>符号</th><th>单价 / 百万 token</th><th>相对倍数</th></tr></thead>
+          <tbody>
+            <tr><td>输入，缓存命中</td><td><strong>P<sub>cr</sub></strong></td><td>0.05 元</td><td>1×</td></tr>
+            <tr><td>输入，缓存未命中</td><td><strong>P<sub>i</sub></strong></td><td>1.50 元</td><td>贵 30 倍</td></tr>
+            <tr><td>输出</td><td><strong>P<sub>o</sub></strong></td><td>4.50 元</td><td>贵 90 倍</td></tr>
+          </tbody>
+        </table>
+
+        <p>便宜三十倍。拿上面表里第 10 轮的 3300 个命中 token 来算：跑 1000 次请求，这段前缀按缓存价是 0.165 元，按全价输入是 4.95 元。</p>
+
+        <p>而且延迟是白送的：不用计算意味着首个 token 出来得更快，而这恰好是用户能直接感觉到的那部分。</p>
+
+        <h2>6. 什么会打破缓存</h2>
+        <p>任何在位置 <em>k</em> 及其之前改动了 token 序列的操作，都会让 <em>k</em> 往后的全部失效：</p>
         <ul>
-          <li>修改前缀中的任何 token（系统提示词哪怕改一个字）</li>
-          <li>重排消息顺序</li>
-          <li>上下文压缩（对旧消息做摘要会打断 token 序列）</li>
-          <li>切换到不同的模型端点</li>
-          <li>GPU 显存压力导致缓存被驱逐（高流量时段）</li>
+          <li>改系统提示词 —— 哪怕一个字符，哪怕只是个时间戳。</li>
+          <li>重排或删掉靠前的消息。</li>
+          <li>上下文压缩：对旧轮次做摘要就是在重写前缀，等于回到冷启动。</li>
+          <li>换模型或换端点 —— 权重不同，缓存也不是同一份。</li>
+          <li>被驱逐。GPU 显存有限，缓存也会过期；高流量时段，一个闲置太久的对话可能就是没了。</li>
         </ul>
 
-        <h2>Agent 模式 vs 直聊模式：缓存影响</h2>
-        <p>这里就联系到了上一篇教程的内容：</p>
-        <ul>
-          <li>在 <strong>Agent 模式</strong>中，消息是严格追加的：S₀ + U₀ + R₁ + C₁ + T₁ + TR₁ + U₁ + R₂ + C₂ + ... ——前缀永远不变，所以缓存命中率随着轮次增加趋近 100%。</li>
-          <li>在<strong>直聊模式</strong>中，服务端剥离推理（R），所以缓存看到的序列是：S₀ + U₀ + C₁ + U₁ + C₂ + U₂ + ... ——仍然是追加的，但中间有间隔。当客户端发送完整消息（包含被服务端丢弃的 R）时，token 序列可能和缓存的不一致，导致部分未命中。</li>
-        </ul>
+        <p>值得记住的规律：<strong>只追加的对话对缓存友好，被编辑过的对话则不然。</strong></p>
 
-        <p>下一篇教程我们将精确量化这个差异。</p>
+        <h2>7. 为什么 Agent 模式占优</h2>
+        <p>这里就接上了上一节。Agent 模式的历史是严格只追加的 —— S₀、U₀、R₁、C₁、T₁、TR₁、U₁、R₂、…… —— 已经发出去的东西永远不会被改写。上一次请求的整段内容仍然是这一次的前缀，所以匹配几乎能走到末尾。</p>
+
+        <p>直聊模式接近只追加，但差了那么一点，而这一点是要花钱的。漏在哪儿，下一节精确算给你看。</p>
 
         <h2>小结</h2>
         <ul>
-          <li>KV Cache 在 GPU 显存中存储注意力计算结果，避免重复工作。</li>
-          <li>使用最长公共前缀匹配——只有请求开头部分能被缓存。</li>
-          <li>缓存以 64-token 块为单位操作。</li>
-          <li>命中缓存的 token 更便宜（1/10–1/30 的价格）且更快（无需重新计算）。</li>
-          <li>Agent 模式的纯追加结构天然对缓存友好；直聊模式则较弱。</li>
+          <li>KV Cache 把历史 token 的 Key、Value 矩阵存在 GPU 上，避免重算。</li>
+          <li>匹配方式是最长公共前缀：从第 0 个 token 开始，在第一个差异处停住。</li>
+          <li>命中长度向下取整到 64-token 的块，所以特别短的前缀吃不到收益。</li>
+          <li>命中缓存的输入 token 大约是全价的 1/30，而且返回更快。</li>
+          <li>任何重写前缀的操作 —— 尤其是上下文压缩 —— 都会把你打回冷启动。</li>
         </ul>
+
+        <p>所以缓存能省钱。但到底能省多少？这取决于缓存命中率，我们下一节就来算它。</p>
       </div>
 
       <div class="tut-nav-footer">
@@ -243,5 +442,19 @@
 </footer>
 
 <script src="tutorial-i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false}
+    ],
+    ignoredClasses: ["tut-code"],
+    throwOnError: false
+  });
+});
+</script>
 </body>
 </html>

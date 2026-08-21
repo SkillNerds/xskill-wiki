@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>xskill for Individual Developers · xskill tutorials 🥥</title>
+<title>xskill for Developers · xskill tutorials 🥥</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
@@ -79,17 +79,29 @@
       <!-- ===== ENGLISH ===== -->
       <div data-lang-content="en" class="is-visible">
         <h1>xskill for Individual Developers</h1>
-        <p class="tut-subtitle">Let your coding agent automatically build a library of reusable skills as you work.</p>
+        <p class="tut-subtitle">Let your coding agent build a library of reusable skills while you work — no documentation sprints required.</p>
 
-        <p>This tutorial will walk you through setting up xskill for your personal projects, showing how to let your coding agent automatically build a library of reusable skills as you work. Coming soon.</p>
+        <p>In this upcoming tutorial, we'll walk you through setting up xskill for your own projects, starting from a plain install and a coding agent you already use. The goal for the first half hour is modest: get sessions recorded, and watch your first Skill appear without writing it.</p>
+
+        <p>From there we'll cover the part that matters day to day — reading what got distilled, editing a Skill when the agent's summary isn't quite how you'd put it, and pinning the ones you rely on so they stop changing under you.</p>
+
+        <p>We'll finish with the moment it starts paying off: opening a project you haven't touched in a month and finding your agent already knows about the build order, the flaky test, and the log file in the strange place.</p>
+
+        <p class="doc-note">Coming soon. Until then, the <a href="../wiki.html">Wiki</a> has the install steps and CLI reference.</p>
       </div>
 
       <!-- ===== CHINESE ===== -->
       <div data-lang-content="zh">
         <h1>面向个人开发者的 xskill</h1>
-        <p class="tut-subtitle">让你的编程助手在日常工作中自动积累一套可复用的技能库。</p>
+        <p class="tut-subtitle">让你的编程助手在你干活的过程中自己攒出一套可复用的技能库 —— 不需要专门腾出时间写文档。</p>
 
-        <p>这篇教程将引导你为个人项目配置 xskill，展示如何让编程助手在你工作的过程中自动积累一套可复用的技能库。即将推出。</p>
+        <p>在接下来这篇教程里，我们会带你为自己的项目把 xskill 配起来，起点就是一次普通安装，加上你本来就在用的编程助手。前半小时的目标很朴素：让会话被记录下来，然后看着你的第一个 Skill 自己冒出来，你一个字都不用写。</p>
+
+        <p>接着我们会讲日常真正要紧的部分 —— 怎么读它蒸馏出来的东西、当 Agent 的总结跟你的说法不太一样时怎么改，以及怎么把你依赖的那几个钉住，让它们不再在你脚底下变化。</p>
+
+        <p>最后我们会讲到它开始回本的那个瞬间：打开一个你一个月没碰的项目，发现你的 Agent 已经知道构建顺序、知道那个时不时挂的测试、也知道那个放在奇怪位置的日志文件。</p>
+
+        <p class="doc-note">即将推出。在那之前，<a href="../wiki.html">文档区</a>里有安装步骤和 CLI 参考。</p>
       </div>
 
       <div class="tut-nav-footer">
@@ -117,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function() {
       {left: "$$", right: "$$", display: true},
       {left: "$", right: "$", display: false}
     ],
+    ignoredClasses: ["tut-code"],
     throwOnError: false
   });
 });
