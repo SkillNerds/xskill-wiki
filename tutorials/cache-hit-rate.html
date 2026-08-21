@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cache Hit Rate · xskill tutorials 🥥</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥥</text></svg>" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="tutorial-styles.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+</head>
+<body>
+
+<div class="sky-decor" aria-hidden="true">
+  <div class="sun-glow"></div>
+  <div class="cloud cloud--1"></div>
+  <div class="cloud cloud--2"></div>
+</div>
+
+<header class="nav-wrap">
+  <nav class="nav">
+    <a class="brand" href="../index.html" aria-label="xskill home">
+      <span class="brand__coco">🥥</span>
+      <span class="brand__name">xskill<span class="brand__dot">.wiki</span></span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="../index.html" data-i18n="nav.home">Home</a></li>
+      <li><a href="../wiki.html" data-i18n="nav.wiki">Wiki</a></li>
+      <li><a href="index.html" data-i18n="nav.tutorials">Tutorials</a></li>
+    </ul>
+    <div class="nav__actions">
+      <div class="lang" role="group" aria-label="language">
+        <button type="button" class="lang__btn" data-set-lang="en" data-i18n="lang.en">EN</button>
+        <button type="button" class="lang__btn" data-set-lang="zh" data-i18n="lang.zh">中</button>
+      </div>
+      <a class="chip chip--ghost" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">★ GitHub</a>
+    </div>
+  </nav>
+</header>
+
+<div class="tutorial-shell">
+  <aside class="tut-sidebar">
+    <div class="tut-sidebar__inner">
+      <div class="tut-sidebar__title" data-i18n="tut.sidebar_title">Tutorials</div>
+      <div class="tut-sidebar__chapter is-open">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_a">A: Agent Basics</div>
+        <div class="tut-sidebar__links">
+          <a href="make-your-first-api-call.html" data-i18n="tut.a1">Make Your First API Call</a>
+          <a href="what-is-kv-cache.html" data-i18n="tut.a2">What is KV Cache</a>
+          <a href="cache-hit-rate.html" class="is-active" data-i18n="tut.a3">Cache Hit Rate</a>
+          <a href="how-cache-influences-budget.html" data-i18n="tut.a4">How Cache Influences Budget</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_b">B: Skill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-is-a-skill.html" data-i18n="tut.b1">What is a Skill</a>
+          <a href="skill-use-cases.html" data-i18n="tut.b2">Skill Use Cases</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_c">C: xskill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-xskill-does.html" data-i18n="tut.c1">What xskill Does</a>
+          <a href="xskill-for-developers.html" data-i18n="tut.c2">xskill for Developers</a>
+          <a href="xskill-for-production.html" data-i18n="tut.c3">xskill for Production</a>
+        </div>
+      </div>
+      <a class="tut-sidebar__back" href="../wiki.html" data-i18n="tut.back_wiki">← Back to Wiki</a>
+    </div>
+  </aside>
+
+  <main class="tut-content">
+    <article class="tut-article">
+
+      <!-- ===== ENGLISH ===== -->
+      <div data-lang-content="en" class="is-visible">
+        <h1>Cache Hit Rate</h1>
+        <p class="tut-subtitle">Derive the formulas for cache hit rate in both modes, then visualize how hit rate evolves over a multi-turn conversation.</p>
+
+        <h2>Agent Mode Formula</h2>
+        <p>In Agent mode, messages are strictly appended. At turn $n$, the total input is the full history. The only "new" tokens (cache miss) are the user message $U_n$ just added:</p>
+
+        <div class="tut-formula">
+          $$\text{HitRatio}_{\text{agent}}(n) = 1 - \frac{U_n}{S_0 + U_0 + \sum_{i=1}^{n-1}(R_i + C_i + T_i + TR_i + U_i) + U_n}$$
+        </div>
+
+        <p>As $n$ grows, the denominator grows much faster than the numerator ($U_n$ stays roughly constant), so hit rate monotonically approaches 100%.</p>
+
+        <h2>Direct Chat Mode Formula</h2>
+        <p>In Direct Chat, the server strips reasoning ($R_i$) from history. Additionally, the last assistant response $C_{n-1}$ is freshly appended (wasn't in the previous request). So the miss includes both $C_{n-1}$ and the new $U_n$:</p>
+
+        <div class="tut-formula">
+          $$\text{HitRatio}_{\text{chat}}(n) = 1 - \frac{C_{n-1} + U_n}{S_0 + U_0 + \sum_{i=1}^{n-1} C_i + \sum_{i=1}^n U_i}$$
+        </div>
+
+        <p>Notice: longer model answers ($C_{n-1}$) directly reduce the hit rate. Agent mode doesn't have this problem because $C_{n-1}$ was already in the previous request.</p>
+
+        <h2>Interactive Visualization</h2>
+      </div>
+
+      <!-- ===== CHINESE ===== -->
+      <div data-lang-content="zh">
+        <h1>缓存命中率</h1>
+        <p class="tut-subtitle">推导两种模式下缓存命中率的公式，然后可视化展示命中率在多轮对话中的演变。</p>
+
+        <h2>Agent 模式公式</h2>
+        <p>Agent 模式下，消息是严格追加的。在第 $n$ 轮，总输入是完整历史。唯一的"新" token（缓存未命中）是刚追加的用户消息 $U_n$：</p>
+
+        <div class="tut-formula">
+          $$\text{HitRatio}_{\text{agent}}(n) = 1 - \frac{U_n}{S_0 + U_0 + \sum_{i=1}^{n-1}(R_i + C_i + T_i + TR_i + U_i) + U_n}$$
+        </div>
+
+        <p>随着 $n$ 增大，分母增长远快于分子（$U_n$ 大致不变），所以命中率单调趋近 100%。</p>
+
+        <h2>直聊模式公式</h2>
+        <p>直聊模式下，服务端剥离推理（$R_i$）。而且上一轮的 assistant 回复 $C_{n-1}$ 是新追加的（上一次请求中没有）。所以未命中包含 $C_{n-1}$ 和新的 $U_n$：</p>
+
+        <div class="tut-formula">
+          $$\text{HitRatio}_{\text{chat}}(n) = 1 - \frac{C_{n-1} + U_n}{S_0 + U_0 + \sum_{i=1}^{n-1} C_i + \sum_{i=1}^n U_i}$$
+        </div>
+
+        <p>注意：模型回答越长（$C_{n-1}$ 越大），命中率越低。Agent 模式没有这个问题，因为 $C_{n-1}$ 已经在上一次请求中了。</p>
+
+        <h2>交互式可视化</h2>
+      </div>
+
+      <!-- ===== INTERACTIVE (shared, language-independent) ===== -->
+      <div class="tut-interactive" id="viz-section">
+        <h4 data-lang-content="en" class="is-visible">Cache Hit Rate Explorer</h4>
+        <h4 data-lang-content="zh">缓存命中率探索器</h4>
+
+        <div class="tut-toggle-group" style="margin-bottom:16px;">
+          <button class="tut-toggle-btn is-active" id="btn-agent">Agent Mode</button>
+          <button class="tut-toggle-btn" id="btn-chat">Direct Chat</button>
+        </div>
+
+        <div class="tut-slider-group">
+          <div class="tut-slider-item">
+            <label>S₀ (system prompt tokens)</label>
+            <input type="range" id="sl-s0" min="50" max="2000" value="800" step="50">
+            <span class="slider-val" id="val-s0">800</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>U (user message tokens)</label>
+            <input type="range" id="sl-u" min="20" max="500" value="100" step="10">
+            <span class="slider-val" id="val-u">100</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>R (reasoning tokens)</label>
+            <input type="range" id="sl-r" min="50" max="2000" value="500" step="50">
+            <span class="slider-val" id="val-r">500</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>C (content tokens)</label>
+            <input type="range" id="sl-c" min="20" max="1000" value="200" step="20">
+            <span class="slider-val" id="val-c">200</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>T (tool call tokens)</label>
+            <input type="range" id="sl-t" min="0" max="500" value="80" step="10">
+            <span class="slider-val" id="val-t">80</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>TR (tool result tokens)</label>
+            <input type="range" id="sl-tr" min="0" max="1000" value="150" step="10">
+            <span class="slider-val" id="val-tr">150</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>n (current turn)</label>
+            <input type="range" id="sl-n" min="1" max="30" value="10" step="1">
+            <span class="slider-val" id="val-n">10</span>
+          </div>
+        </div>
+
+        <!-- cache bar visualization -->
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;" data-lang-content="en" class="is-visible">GPU Memory Prefix Match:</p>
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;" data-lang-content="zh">GPU 显存前缀匹配：</p>
+        <div class="cache-bar" id="cache-bar">
+          <div class="cache-bar__hit" id="bar-hit" style="width:80%"></div>
+          <div class="cache-bar__miss" id="bar-miss" style="width:15%"></div>
+          <div class="cache-bar__discard" id="bar-discard" style="width:5%"></div>
+        </div>
+        <div class="cache-bar-legend">
+          <span class="legend-hit">Hit (cached)</span>
+          <span class="legend-miss">Miss (new)</span>
+          <span class="legend-discard">Discarded (R in chat)</span>
+        </div>
+
+        <!-- metrics -->
+        <div class="tut-metrics" id="metrics">
+          <div class="tut-metric">
+            <div class="tut-metric__value" id="metric-total">9800</div>
+            <div class="tut-metric__label">Total Input Tokens</div>
+          </div>
+          <div class="tut-metric">
+            <div class="tut-metric__value" id="metric-hit">94.2%</div>
+            <div class="tut-metric__label">Hit Rate</div>
+          </div>
+          <div class="tut-metric">
+            <div class="tut-metric__value" id="metric-miss">100</div>
+            <div class="tut-metric__label">Missed Tokens</div>
+          </div>
+        </div>
+
+        <!-- chart -->
+        <div class="tut-chart-wrap">
+          <canvas id="hitrate-chart" height="280"></canvas>
+        </div>
+      </div>
+
+      <!-- Conclusions -->
+      <div data-lang-content="en" class="is-visible">
+        <h2>Four Conclusions</h2>
+        <ol>
+          <li><strong>Hit rate monotonically increases</strong> — As turns grow, the cached prefix dominates. Both modes trend toward 100%, but Agent mode gets there much faster.</li>
+          <li><strong>Context compression causes sudden drops</strong> — If you summarize old messages to save context window, the entire prefix changes and hit rate drops to near 0% (then rebuilds).</li>
+          <li><strong>Direct Chat: longer answers → lower hit rate</strong> — Each new C is a cache miss. If C is 1000 tokens vs 100 tokens, the difference is dramatic.</li>
+          <li><strong>Agent mode hit rate is significantly higher</strong> — Because reasoning (R) is preserved in the prefix, the only miss per turn is the tiny U. In Direct Chat, each turn misses both C and U.</li>
+        </ol>
+      </div>
+
+      <div data-lang-content="zh">
+        <h2>四个结论</h2>
+        <ol>
+          <li><strong>命中率单调递增</strong>——随着轮次增加，缓存前缀占比越来越大。两种模式都趋向 100%，但 Agent 模式到达得快得多。</li>
+          <li><strong>上下文压缩导致突然下降</strong>——如果你为了省 context window 而对旧消息做摘要，整个前缀都变了，命中率跌到接近 0%（然后重新积累）。</li>
+          <li><strong>直聊模式：回答越长 → 命中率越低</strong>——每个新的 C 都是缓存未命中。C 是 1000 token 和 100 token 的差别巨大。</li>
+          <li><strong>Agent 模式命中率显著更高</strong>——因为推理（R）保留在前缀中，每轮唯一的未命中只有很小的 U。直聊模式每轮都要未命中 C 和 U。</li>
+        </ol>
+      </div>
+
+      <div class="tut-nav-footer">
+        <a href="what-is-kv-cache.html" data-i18n="tut.prev">← Previous</a>
+        <a href="how-cache-influences-budget.html" data-i18n="tut.next">Next →</a>
+      </div>
+    </article>
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="footer__bar footer__bar--wiki">
+    <span>MIT © 370025263 — brewed under a palm tree.</span>
+    <span><a href="../wiki.html">Wiki</a> · <a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+</footer>
+
+<script src="tutorial-i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false}
+    ],
+    throwOnError: false
+  });
+
+  // Interactive visualization
+  var mode = "agent";
+  var chart = null;
+
+  var sliders = {
+    s0: document.getElementById("sl-s0"),
+    u: document.getElementById("sl-u"),
+    r: document.getElementById("sl-r"),
+    c: document.getElementById("sl-c"),
+    t: document.getElementById("sl-t"),
+    tr: document.getElementById("sl-tr"),
+    n: document.getElementById("sl-n")
+  };
+
+  function getVals() {
+    return {
+      s0: +sliders.s0.value,
+      u: +sliders.u.value,
+      r: +sliders.r.value,
+      c: +sliders.c.value,
+      t: +sliders.t.value,
+      tr: +sliders.tr.value,
+      n: +sliders.n.value
+    };
+  }
+
+  function agentHitRate(v, n) {
+    if (n <= 1) return 0;
+    var total = v.s0 + v.u + (n - 1) * (v.r + v.c + v.t + v.tr + v.u) + v.u;
+    var miss = v.u;
+    return 1 - miss / total;
+  }
+
+  function chatHitRate(v, n) {
+    if (n <= 1) return 0;
+    var total = v.s0 + v.u + (n - 1) * v.c + n * v.u;
+    var miss = v.c + v.u;
+    return Math.max(0, 1 - miss / total);
+  }
+
+  function totalTokens(v, n) {
+    if (mode === "agent") {
+      return v.s0 + v.u + (n > 1 ? (n - 1) * (v.r + v.c + v.t + v.tr + v.u) : 0) + v.u;
+    } else {
+      return v.s0 + v.u + (n > 1 ? (n - 1) * v.c : 0) + n * v.u;
+    }
+  }
+
+  function missedTokens(v, n) {
+    if (n <= 1) return totalTokens(v, n);
+    return mode === "agent" ? v.u : v.c + v.u;
+  }
+
+  function update() {
+    var v = getVals();
+    var n = v.n;
+
+    // update slider displays
+    Object.keys(sliders).forEach(function(k) {
+      document.getElementById("val-" + k).textContent = sliders[k].value;
+    });
+
+    var hr = mode === "agent" ? agentHitRate(v, n) : chatHitRate(v, n);
+    var tot = totalTokens(v, n);
+    var miss = missedTokens(v, n);
+    var hit = tot - miss;
+
+    // discarded tokens (reasoning stripped in chat mode)
+    var discarded = 0;
+    if (mode === "chat" && n > 1) {
+      discarded = (n - 1) * v.r;
+    }
+
+    document.getElementById("metric-total").textContent = tot.toLocaleString();
+    document.getElementById("metric-hit").textContent = (hr * 100).toFixed(1) + "%";
+    document.getElementById("metric-miss").textContent = miss.toLocaleString();
+
+    // cache bar
+    var barTotal = tot + discarded;
+    if (barTotal > 0) {
+      document.getElementById("bar-hit").style.width = (hit / barTotal * 100) + "%";
+      document.getElementById("bar-miss").style.width = (miss / barTotal * 100) + "%";
+      document.getElementById("bar-discard").style.width = (discarded / barTotal * 100) + "%";
+    }
+
+    // chart data
+    var labels = [];
+    var agentData = [];
+    var chatData = [];
+    for (var i = 1; i <= 30; i++) {
+      labels.push(i);
+      agentData.push((agentHitRate(v, i) * 100).toFixed(1));
+      chatData.push((chatHitRate(v, i) * 100).toFixed(1));
+    }
+
+    if (chart) {
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = agentData;
+      chart.data.datasets[1].data = chatData;
+      chart.update();
+    } else {
+      var ctx = document.getElementById("hitrate-chart").getContext("2d");
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Agent Mode",
+              data: agentData,
+              borderColor: "#1f8a96",
+              backgroundColor: "rgba(31,138,150,0.1)",
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointRadius: 0
+            },
+            {
+              label: "Direct Chat",
+              data: chatData,
+              borderColor: "#ff7a5c",
+              backgroundColor: "rgba(255,122,92,0.1)",
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top" },
+            tooltip: { mode: "index", intersect: false }
+          },
+          scales: {
+            x: { title: { display: true, text: "Turn (n)" } },
+            y: { title: { display: true, text: "Hit Rate %" }, min: 0, max: 100 }
+          }
+        }
+      });
+    }
+  }
+
+  // event listeners
+  Object.keys(sliders).forEach(function(k) {
+    sliders[k].addEventListener("input", update);
+  });
+
+  document.getElementById("btn-agent").addEventListener("click", function() {
+    mode = "agent";
+    this.classList.add("is-active");
+    document.getElementById("btn-chat").classList.remove("is-active");
+    update();
+  });
+  document.getElementById("btn-chat").addEventListener("click", function() {
+    mode = "chat";
+    this.classList.add("is-active");
+    document.getElementById("btn-agent").classList.remove("is-active");
+    update();
+  });
+
+  update();
+});
+</script>
+</body>
+</html>

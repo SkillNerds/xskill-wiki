@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>What is KV Cache · xskill tutorials 🥥</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥥</text></svg>" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="tutorial-styles.css" />
+</head>
+<body>
+
+<div class="sky-decor" aria-hidden="true">
+  <div class="sun-glow"></div>
+  <div class="cloud cloud--1"></div>
+  <div class="cloud cloud--2"></div>
+</div>
+
+<header class="nav-wrap">
+  <nav class="nav">
+    <a class="brand" href="../index.html" aria-label="xskill home">
+      <span class="brand__coco">🥥</span>
+      <span class="brand__name">xskill<span class="brand__dot">.wiki</span></span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="../index.html" data-i18n="nav.home">Home</a></li>
+      <li><a href="../wiki.html" data-i18n="nav.wiki">Wiki</a></li>
+      <li><a href="index.html" data-i18n="nav.tutorials">Tutorials</a></li>
+    </ul>
+    <div class="nav__actions">
+      <div class="lang" role="group" aria-label="language">
+        <button type="button" class="lang__btn" data-set-lang="en" data-i18n="lang.en">EN</button>
+        <button type="button" class="lang__btn" data-set-lang="zh" data-i18n="lang.zh">中</button>
+      </div>
+      <a class="chip chip--ghost" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">★ GitHub</a>
+    </div>
+  </nav>
+</header>
+
+<div class="tutorial-shell">
+  <aside class="tut-sidebar">
+    <div class="tut-sidebar__inner">
+      <div class="tut-sidebar__title" data-i18n="tut.sidebar_title">Tutorials</div>
+      <div class="tut-sidebar__chapter is-open">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_a">A: Agent Basics</div>
+        <div class="tut-sidebar__links">
+          <a href="make-your-first-api-call.html" data-i18n="tut.a1">Make Your First API Call</a>
+          <a href="what-is-kv-cache.html" class="is-active" data-i18n="tut.a2">What is KV Cache</a>
+          <a href="cache-hit-rate.html" data-i18n="tut.a3">Cache Hit Rate</a>
+          <a href="how-cache-influences-budget.html" data-i18n="tut.a4">How Cache Influences Budget</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_b">B: Skill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-is-a-skill.html" data-i18n="tut.b1">What is a Skill</a>
+          <a href="skill-use-cases.html" data-i18n="tut.b2">Skill Use Cases</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_c">C: xskill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-xskill-does.html" data-i18n="tut.c1">What xskill Does</a>
+          <a href="xskill-for-developers.html" data-i18n="tut.c2">xskill for Developers</a>
+          <a href="xskill-for-production.html" data-i18n="tut.c3">xskill for Production</a>
+        </div>
+      </div>
+      <a class="tut-sidebar__back" href="../wiki.html" data-i18n="tut.back_wiki">← Back to Wiki</a>
+    </div>
+  </aside>
+
+  <main class="tut-content">
+    <article class="tut-article">
+
+      <!-- ===== ENGLISH ===== -->
+      <div data-lang-content="en" class="is-visible">
+        <h1>What is KV Cache</h1>
+        <p class="tut-subtitle">Understand the mechanism that makes repeated API calls cheaper and faster — and why it matters for Agent workflows.</p>
+
+        <h2>The Problem: Redundant Computation</h2>
+        <p>Every time you send a request to a language model, the server must compute attention across ALL tokens in your input. For a 10-turn conversation, that means re-processing everything from the system prompt through all previous messages — even though most of that hasn't changed since last time.</p>
+        <p>This is like re-downloading an entire website every time you click a link, even though 95% of the page is identical.</p>
+
+        <h2>The Solution: KV Cache</h2>
+        <p>KV Cache (Key-Value Cache) stores the intermediate attention computation results on GPU memory. When your next request arrives, the server checks: "Does the beginning of this new request match something I've already computed?"</p>
+        <p>If yes — those tokens are served from cache. No re-computation needed.</p>
+
+        <div class="tut-callout tut-callout--info">
+          <strong>Analogy:</strong> Think of it like a browser cache for web pages. If the HTML didn't change, the browser doesn't re-download it — it serves from the local cache. KV Cache does the same thing for GPU attention computation.
+        </div>
+
+        <h2>Longest Common Prefix Matching</h2>
+        <p>The cache uses a "longest common prefix" strategy. It compares the token sequence of your new request against cached sequences, starting from the very first token. The match must be contiguous from the beginning — a matching suffix or middle section doesn't count.</p>
+
+        <div class="tut-code"><code><span class="cmt"># Request at Turn 1:</span>
+[S₀ | U₀]  →  all computed fresh
+
+<span class="cmt"># Request at Turn 2:</span>
+[S₀ | U₀ | C₁ | U₁]
+ ↑ cached ↑    ↑ new ↑
+
+<span class="cmt"># Request at Turn 3:</span>
+[S₀ | U₀ | C₁ | U₁ | C₂ | U₂]
+ ↑────── cached ──────↑  ↑new↑</code></div>
+
+        <p>The longer the shared prefix, the more computation is reused.</p>
+
+        <h2>64-Token Block Alignment</h2>
+        <p>In practice, KV Cache operates in chunks (commonly 64 tokens). The cache hit is aligned to block boundaries — if your prefix is 100 tokens long, 96 tokens (1.5 blocks) are cached, and the remaining 4 tokens plus new content are computed fresh.</p>
+        <p>This means very short prefixes (under 64 tokens) may not benefit much from caching.</p>
+
+        <h2>Why This Matters: Cost and Speed</h2>
+        <p>Cached tokens bring two advantages:</p>
+        <ol>
+          <li><strong>Lower cost</strong> — API providers charge significantly less for cached input tokens (often 1/10th to 1/30th the price of uncached tokens).</li>
+          <li><strong>Lower latency</strong> — No computation means faster time-to-first-token. The prefix section is essentially "free" from a compute standpoint.</li>
+        </ol>
+
+        <div class="tut-callout tut-callout--warn">
+          <strong>The flip side:</strong> If you modify the beginning of your message list (e.g., change the system prompt, insert a new instruction before old messages), the entire prefix changes and cache is invalidated. This is why message ordering and immutability matter for cost optimization.
+        </div>
+
+        <h2>What Breaks the Cache</h2>
+        <ul>
+          <li>Changing any token in the prefix (even one character in the system prompt)</li>
+          <li>Reordering messages</li>
+          <li>Context compression (summarizing old messages breaks the token sequence)</li>
+          <li>Switching to a different model endpoint</li>
+          <li>Cache eviction due to GPU memory pressure (high traffic periods)</li>
+        </ul>
+
+        <h2>Agent Mode vs Direct Chat: Cache Implications</h2>
+        <p>Now here's the connection to the previous tutorial:</p>
+        <ul>
+          <li>In <strong>Agent mode</strong>, messages are strictly append-only: S₀ + U₀ + R₁ + C₁ + T₁ + TR₁ + U₁ + R₂ + C₂ + ... — the prefix never changes, so cache hit rate approaches 100% over many turns.</li>
+          <li>In <strong>Direct Chat</strong>, the server strips reasoning (R), so the sequence seen by the cache is: S₀ + U₀ + C₁ + U₁ + C₂ + U₂ + ... — still append-only, but with a gap. When the client sends the full message (including R which the server discards), the token sequence may differ from what's cached, causing partial misses.</li>
+        </ul>
+
+        <p>We'll quantify this difference precisely in the next tutorial.</p>
+
+        <h2>Summary</h2>
+        <ul>
+          <li>KV Cache stores attention computations on GPU memory to avoid redundant work.</li>
+          <li>It uses longest-common-prefix matching — only the beginning of your request can be cached.</li>
+          <li>Cache operates in 64-token blocks.</li>
+          <li>Cached tokens are cheaper (1/10–1/30 price) and faster (no recomputation).</li>
+          <li>Agent mode's append-only structure is naturally cache-friendly; Direct Chat less so.</li>
+        </ul>
+      </div>
+
+      <!-- ===== CHINESE ===== -->
+      <div data-lang-content="zh">
+        <h1>什么是 KV Cache</h1>
+        <p class="tut-subtitle">理解让重复 API 调用更便宜、更快的机制——以及它为什么对 Agent 工作流至关重要。</p>
+
+        <h2>问题：冗余计算</h2>
+        <p>每次你向语言模型发送请求，服务端都必须对输入中的所有 token 做注意力计算。一个 10 轮对话意味着：从系统提示词到所有历史消息，全部重新处理一遍——尽管其中大部分从上次以来根本没变。</p>
+        <p>这就像每次点一个链接都重新下载整个网站，尽管 95% 的内容和上次一模一样。</p>
+
+        <h2>解决方案：KV Cache</h2>
+        <p>KV Cache（Key-Value 缓存）在 GPU 显存中保存中间的注意力计算结果。当下一个请求到来时，服务端会检查："新请求的开头是否和我已经算过的东西匹配？"</p>
+        <p>如果匹配——那些 token 直接从缓存中读取，不需要重新计算。</p>
+
+        <div class="tut-callout tut-callout--info">
+          <strong>类比：</strong>把它想成浏览器缓存。如果 HTML 没变，浏览器不会重新下载——直接从本地缓存提供。KV Cache 对 GPU 注意力计算做的是同样的事。
+        </div>
+
+        <h2>最长公共前缀匹配</h2>
+        <p>缓存使用"最长公共前缀"策略。它从第一个 token 开始，逐个比较新请求的 token 序列与缓存中的序列。匹配必须从开头连续——中间或末尾的匹配不算。</p>
+
+        <div class="tut-code"><code><span class="cmt"># 第 1 轮的请求：</span>
+[S₀ | U₀]  →  全部重新计算
+
+<span class="cmt"># 第 2 轮的请求：</span>
+[S₀ | U₀ | C₁ | U₁]
+ ↑ 缓存命中 ↑  ↑ 新的 ↑
+
+<span class="cmt"># 第 3 轮的请求：</span>
+[S₀ | U₀ | C₁ | U₁ | C₂ | U₂]
+ ↑────── 缓存命中 ──────↑  ↑新↑</code></div>
+
+        <p>共享前缀越长，复用的计算越多。</p>
+
+        <h2>64-Token 块对齐</h2>
+        <p>实际上，KV Cache 按块操作（通常是 64 个 token 一块）。缓存命中会对齐到块边界——如果你的前缀有 100 个 token，那么 96 个 token（1.5 个块）被缓存命中，剩下的 4 个 token 加上新内容需要重新计算。</p>
+        <p>这意味着非常短的前缀（少于 64 token）可能从缓存中获益不大。</p>
+
+        <h2>为什么重要：成本与速度</h2>
+        <p>缓存命中的 token 带来两个好处：</p>
+        <ol>
+          <li><strong>更低的费用</strong>——API 提供商对缓存命中的输入 token 收费显著更低（通常是未命中价格的 1/10 到 1/30）。</li>
+          <li><strong>更低的延迟</strong>——不需要计算意味着更快的首 token 返回时间。前缀部分在计算角度基本上是"免费的"。</li>
+        </ol>
+
+        <div class="tut-callout tut-callout--warn">
+          <strong>反面：</strong>如果你修改了消息列表的开头（比如改了系统提示词、在旧消息前面插入新指令），整个前缀都会变化，缓存全部失效。这就是为什么消息顺序和不可变性对成本优化很重要。
+        </div>
+
+        <h2>什么会打破缓存</h2>
+        <ul>
+          <li>修改前缀中的任何 token（系统提示词哪怕改一个字）</li>
+          <li>重排消息顺序</li>
+          <li>上下文压缩（对旧消息做摘要会打断 token 序列）</li>
+          <li>切换到不同的模型端点</li>
+          <li>GPU 显存压力导致缓存被驱逐（高流量时段）</li>
+        </ul>
+
+        <h2>Agent 模式 vs 直聊模式：缓存影响</h2>
+        <p>这里就联系到了上一篇教程的内容：</p>
+        <ul>
+          <li>在 <strong>Agent 模式</strong>中，消息是严格追加的：S₀ + U₀ + R₁ + C₁ + T₁ + TR₁ + U₁ + R₂ + C₂ + ... ——前缀永远不变，所以缓存命中率随着轮次增加趋近 100%。</li>
+          <li>在<strong>直聊模式</strong>中，服务端剥离推理（R），所以缓存看到的序列是：S₀ + U₀ + C₁ + U₁ + C₂ + U₂ + ... ——仍然是追加的，但中间有间隔。当客户端发送完整消息（包含被服务端丢弃的 R）时，token 序列可能和缓存的不一致，导致部分未命中。</li>
+        </ul>
+
+        <p>下一篇教程我们将精确量化这个差异。</p>
+
+        <h2>小结</h2>
+        <ul>
+          <li>KV Cache 在 GPU 显存中存储注意力计算结果，避免重复工作。</li>
+          <li>使用最长公共前缀匹配——只有请求开头部分能被缓存。</li>
+          <li>缓存以 64-token 块为单位操作。</li>
+          <li>命中缓存的 token 更便宜（1/10–1/30 的价格）且更快（无需重新计算）。</li>
+          <li>Agent 模式的纯追加结构天然对缓存友好；直聊模式则较弱。</li>
+        </ul>
+      </div>
+
+      <div class="tut-nav-footer">
+        <a href="make-your-first-api-call.html" data-i18n="tut.prev">← Previous</a>
+        <a href="cache-hit-rate.html" data-i18n="tut.next">Next →</a>
+      </div>
+    </article>
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="footer__bar footer__bar--wiki">
+    <span>MIT © 370025263 — brewed under a palm tree.</span>
+    <span><a href="../wiki.html">Wiki</a> · <a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+</footer>
+
+<script src="tutorial-i18n.js"></script>
+</body>
+</html>

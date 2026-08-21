@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How Cache Influences Your Budget · xskill tutorials 🥥</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥥</text></svg>" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="tutorial-styles.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+</head>
+<body>
+
+<div class="sky-decor" aria-hidden="true">
+  <div class="sun-glow"></div>
+  <div class="cloud cloud--1"></div>
+  <div class="cloud cloud--2"></div>
+</div>
+
+<header class="nav-wrap">
+  <nav class="nav">
+    <a class="brand" href="../index.html" aria-label="xskill home">
+      <span class="brand__coco">🥥</span>
+      <span class="brand__name">xskill<span class="brand__dot">.wiki</span></span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="../index.html" data-i18n="nav.home">Home</a></li>
+      <li><a href="../wiki.html" data-i18n="nav.wiki">Wiki</a></li>
+      <li><a href="index.html" data-i18n="nav.tutorials">Tutorials</a></li>
+    </ul>
+    <div class="nav__actions">
+      <div class="lang" role="group" aria-label="language">
+        <button type="button" class="lang__btn" data-set-lang="en" data-i18n="lang.en">EN</button>
+        <button type="button" class="lang__btn" data-set-lang="zh" data-i18n="lang.zh">中</button>
+      </div>
+      <a class="chip chip--ghost" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">★ GitHub</a>
+    </div>
+  </nav>
+</header>
+
+<div class="tutorial-shell">
+  <aside class="tut-sidebar">
+    <div class="tut-sidebar__inner">
+      <div class="tut-sidebar__title" data-i18n="tut.sidebar_title">Tutorials</div>
+      <div class="tut-sidebar__chapter is-open">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_a">A: Agent Basics</div>
+        <div class="tut-sidebar__links">
+          <a href="make-your-first-api-call.html" data-i18n="tut.a1">Make Your First API Call</a>
+          <a href="what-is-kv-cache.html" data-i18n="tut.a2">What is KV Cache</a>
+          <a href="cache-hit-rate.html" data-i18n="tut.a3">Cache Hit Rate</a>
+          <a href="how-cache-influences-budget.html" class="is-active" data-i18n="tut.a4">How Cache Influences Budget</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_b">B: Skill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-is-a-skill.html" data-i18n="tut.b1">What is a Skill</a>
+          <a href="skill-use-cases.html" data-i18n="tut.b2">Skill Use Cases</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_c">C: xskill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-xskill-does.html" data-i18n="tut.c1">What xskill Does</a>
+          <a href="xskill-for-developers.html" data-i18n="tut.c2">xskill for Developers</a>
+          <a href="xskill-for-production.html" data-i18n="tut.c3">xskill for Production</a>
+        </div>
+      </div>
+      <a class="tut-sidebar__back" href="../wiki.html" data-i18n="tut.back_wiki">← Back to Wiki</a>
+    </div>
+  </aside>
+
+  <main class="tut-content">
+    <article class="tut-article">
+
+      <!-- ===== ENGLISH ===== -->
+      <div data-lang-content="en" class="is-visible">
+        <h1>How Cache Influences Your Budget</h1>
+        <p class="tut-subtitle">The three-part cost formula for multi-turn agent sessions — and an interactive calculator to see the numbers yourself.</p>
+
+        <h2>The Cost Formula</h2>
+        <p>For an agent session with $n$ turns, the total cost $P_n$ decomposes into three terms:</p>
+
+        <div class="tut-formula">
+          $$P_n = \underbrace{P_{cr}(S_0+U_0)n + P_{cr}\sum_{i=1}^{n}(n-i)(R_i+C_i+T_i+TR_i+U_i)}_{\text{Cache Read}} + \underbrace{P_i(S_0+U_0) + P_i\sum_{i=1}^{n}(TR_i+U_i)}_{\text{Uncached Input}} + \underbrace{P_o\sum_{i=1}^{n}(R_i+C_i+T_i)}_{\text{Output}}$$
+        </div>
+
+        <h2>Understanding the Three Terms</h2>
+
+        <h3>Term 1: Cache Read</h3>
+        <p>The system prompt $S_0 + U_0$ is read $n$ times as a prefix — it appears at the start of every request. Turn $i$'s block (reasoning $R_i$, content $C_i$, tool calls $T_i$, tool results $TR_i$, user message $U_i$) is reused $(n - i)$ times in subsequent turns. This captures the decay: early turns get reused many times, while the last turn's block is never reused. All of this is charged at the cache read price $P_{cr}$, which is much cheaper than the full input price.</p>
+
+        <h3>Term 2: Uncached Input</h3>
+        <p>Only the first occurrence of $S_0 + U_0$ and each turn's new user message $U_i$ plus tool result $TR_i$ are charged at the full input price $P_i$. These are tokens the model sees for the first time — they cannot come from cache.</p>
+
+        <h3>Term 3: Output</h3>
+        <p>Model-generated tokens — reasoning $R_i$, content $C_i$, and tool calls $T_i$ — are always charged at the output price $P_o$. Output tokens are never cached; the model produces them fresh each turn.</p>
+
+        <p class="doc-note">For Direct Chat mode, set $R$, $T$, and $TR$ to zero in the formula — those token types do not appear in simple chat interactions.</p>
+      </div>
+
+      <!-- ===== CHINESE ===== -->
+      <div data-lang-content="zh">
+        <h1>缓存如何影响你的预算</h1>
+        <p class="tut-subtitle">多轮 Agent 会话的三项成本公式，以及一个交互式计算器让你自己看数字。</p>
+
+        <h2>成本公式</h2>
+        <p>对于一个 $n$ 轮的 Agent 会话，总成本 $P_n$ 拆解为三项：</p>
+
+        <div class="tut-formula">
+          $$P_n = \underbrace{P_{cr}(S_0+U_0)n + P_{cr}\sum_{i=1}^{n}(n-i)(R_i+C_i+T_i+TR_i+U_i)}_{\text{Cache Read}} + \underbrace{P_i(S_0+U_0) + P_i\sum_{i=1}^{n}(TR_i+U_i)}_{\text{Uncached Input}} + \underbrace{P_o\sum_{i=1}^{n}(R_i+C_i+T_i)}_{\text{Output}}$$
+        </div>
+
+        <h2>理解三项的含义</h2>
+
+        <h3>第一项：缓存读取</h3>
+        <p>系统提示 $S_0 + U_0$ 作为前缀被读取 $n$ 次——每次请求都在开头出现。第 $i$ 轮的块（推理 $R_i$、内容 $C_i$、工具调用 $T_i$、工具结果 $TR_i$、用户消息 $U_i$）在后续轮次中被重用 $(n - i)$ 次。这体现了衰减：早期轮次被大量复用，最后一轮的块则从不被复用。全部按缓存读取价 $P_{cr}$ 计费，远低于全价输入。</p>
+
+        <h3>第二项：未缓存输入</h3>
+        <p>只有 $S_0 + U_0$ 的首次出现，以及每轮新的用户消息 $U_i$ 加工具结果 $TR_i$，按全价输入 $P_i$ 计费。这些是模型第一次见到的 token，不可能来自缓存。</p>
+
+        <h3>第三项：输出</h3>
+        <p>模型生成的 token——推理 $R_i$、内容 $C_i$、工具调用 $T_i$——始终按输出价 $P_o$ 计费。输出 token 不会被缓存，模型每轮都重新生成。</p>
+
+        <p class="doc-note">直聊模式下，把公式中的 $R$、$T$、$TR$ 设为零即可——简单聊天交互不涉及这些 token 类型。</p>
+      </div>
+
+      <!-- ===== INTERACTIVE CALCULATOR (shared) ===== -->
+      <div class="tut-interactive" id="calc-section">
+        <h4 data-lang-content="en" class="is-visible">Cost Calculator</h4>
+        <h4 data-lang-content="zh">成本计算器</h4>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+          <div>
+            <label data-lang-content="en" class="is-visible" style="font-size:13px;font-weight:600;">Model</label>
+            <label data-lang-content="zh" style="font-size:13px;font-weight:600;">模型</label>
+            <select id="sel-model" style="display:block;margin-top:4px;padding:6px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;">
+              <option value="flash">deepseek-v4-flash</option>
+              <option value="pro">deepseek-v4-pro</option>
+            </select>
+          </div>
+          <div>
+            <label data-lang-content="en" class="is-visible" style="font-size:13px;font-weight:600;">Time Slot</label>
+            <label data-lang-content="zh" style="font-size:13px;font-weight:600;">时段</label>
+            <select id="sel-slot" style="display:block;margin-top:4px;padding:6px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;">
+              <option value="idle" data-en="Off-peak" data-zh="空闲时段">Off-peak</option>
+              <option value="peak" data-en="Peak" data-zh="高峰时段">Peak</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="tut-slider-group">
+          <div class="tut-slider-item">
+            <label>S₀ (system prompt tokens)</label>
+            <input type="range" id="sl-s0" min="200" max="4000" value="1200" step="50">
+            <span class="slider-val" id="val-s0">1200</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>U (user message tokens)</label>
+            <input type="range" id="sl-u" min="20" max="500" value="150" step="10">
+            <span class="slider-val" id="val-u">150</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>R (reasoning tokens)</label>
+            <input type="range" id="sl-r" min="0" max="8000" value="2500" step="50">
+            <span class="slider-val" id="val-r">2500</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>C (content tokens)</label>
+            <input type="range" id="sl-c" min="20" max="2000" value="450" step="10">
+            <span class="slider-val" id="val-c">450</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>T (tool call tokens)</label>
+            <input type="range" id="sl-t" min="0" max="500" value="40" step="10">
+            <span class="slider-val" id="val-t">40</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>TR (tool result tokens)</label>
+            <input type="range" id="sl-tr" min="0" max="1000" value="200" step="10">
+            <span class="slider-val" id="val-tr">200</span>
+          </div>
+          <div class="tut-slider-item">
+            <label>n (number of turns)</label>
+            <input type="range" id="sl-n" min="1" max="30" value="10" step="1">
+            <span class="slider-val" id="val-n">10</span>
+          </div>
+        </div>
+
+        <!-- result cards -->
+        <div class="tut-metrics" id="cost-metrics" style="margin-top:20px;">
+          <div class="tut-metric">
+            <div class="tut-metric__value" id="m-cache-read">—</div>
+            <div class="tut-metric__label">① Cache Read</div>
+          </div>
+          <div class="tut-metric">
+            <div class="tut-metric__value" id="m-uncached">—</div>
+            <div class="tut-metric__label">② Uncached Input</div>
+          </div>
+          <div class="tut-metric">
+            <div class="tut-metric__value" id="m-output">—</div>
+            <div class="tut-metric__label">③ Output</div>
+          </div>
+          <div class="tut-metric" style="border-left:3px solid #1f8a96;">
+            <div class="tut-metric__value" id="m-total" style="color:#1f8a96;">—</div>
+            <div class="tut-metric__label">Total P<sub>n</sub></div>
+          </div>
+        </div>
+
+        <div class="tut-metrics" style="margin-top:12px;">
+          <div class="tut-metric" style="border-left:3px solid #ff7a5c;">
+            <div class="tut-metric__value" id="m-nocache" style="color:#ff7a5c;">—</div>
+            <div class="tut-metric__label" data-lang-content="en" class="is-visible">Without KV Cache</div>
+            <div class="tut-metric__label" data-lang-content="zh">无 KV Cache 基线</div>
+          </div>
+          <div class="tut-metric">
+            <div class="tut-metric__value" id="m-savings">—</div>
+            <div class="tut-metric__label" data-lang-content="en" class="is-visible">Savings</div>
+            <div class="tut-metric__label" data-lang-content="zh">节省</div>
+          </div>
+        </div>
+
+        <!-- chart -->
+        <div class="tut-chart-wrap" style="margin-top:20px;">
+          <canvas id="cost-chart" height="300"></canvas>
+        </div>
+      </div>
+
+      <div class="tut-nav-footer">
+        <a href="cache-hit-rate.html" data-i18n="tut.prev">← Previous</a>
+        <a href="what-is-a-skill.html" data-i18n="tut.next">Next →</a>
+      </div>
+    </article>
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="footer__bar footer__bar--wiki">
+    <span>MIT © 370025263 — brewed under a palm tree.</span>
+    <span><a href="../wiki.html">Wiki</a> · <a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+</footer>
+
+<script src="tutorial-i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false}
+    ],
+    throwOnError: false
+  });
+
+  var PRICING = {
+    flash: { idle: {Pcr:0.05, Pi:1.5, Po:4.5}, peak: {Pcr:0.10, Pi:3.0, Po:9.0} },
+    pro:   { idle: {Pcr:0.15, Pi:4.5, Po:13.5}, peak: {Pcr:0.30, Pi:9.0, Po:27.0} }
+  };
+
+  var chart = null;
+  var selModel = document.getElementById("sel-model");
+  var selSlot = document.getElementById("sel-slot");
+  var sliders = {
+    s0: document.getElementById("sl-s0"),
+    u:  document.getElementById("sl-u"),
+    r:  document.getElementById("sl-r"),
+    c:  document.getElementById("sl-c"),
+    t:  document.getElementById("sl-t"),
+    tr: document.getElementById("sl-tr"),
+    n:  document.getElementById("sl-n")
+  };
+
+  function getVals() {
+    return {
+      s0: +sliders.s0.value,
+      u:  +sliders.u.value,
+      r:  +sliders.r.value,
+      c:  +sliders.c.value,
+      t:  +sliders.t.value,
+      tr: +sliders.tr.value,
+      n:  +sliders.n.value
+    };
+  }
+
+  function getPricing() {
+    return PRICING[selModel.value][selSlot.value];
+  }
+
+  function calcCosts(v, n, p) {
+    var S0U0 = v.s0 + v.u;
+    var perTurn = v.r + v.c + v.t + v.tr + v.u;
+
+    var cacheRead = p.Pcr * S0U0 * n;
+    for (var i = 1; i <= n; i++) {
+      cacheRead += p.Pcr * (n - i) * perTurn;
+    }
+
+    var uncached = p.Pi * S0U0 + p.Pi * n * (v.tr + v.u);
+
+    var output = p.Po * n * (v.r + v.c + v.t);
+
+    // prices are per million tokens
+    cacheRead /= 1e6;
+    uncached  /= 1e6;
+    output    /= 1e6;
+
+    return { cacheRead: cacheRead, uncached: uncached, output: output, total: cacheRead + uncached + output };
+  }
+
+  function calcNoCacheCost(v, n, p) {
+    var S0U0 = v.s0 + v.u;
+    var perTurn = v.r + v.c + v.t + v.tr + v.u;
+    var totalInput = 0;
+    for (var i = 1; i <= n; i++) {
+      totalInput += S0U0 + (i - 1) * perTurn + (v.tr + v.u);
+    }
+    var inputCost = p.Pi * totalInput / 1e6;
+    var outputCost = p.Po * n * (v.r + v.c + v.t) / 1e6;
+    return inputCost + outputCost;
+  }
+
+  function fmt(yuan) {
+    if (yuan < 0.001) return yuan.toFixed(6) + " ¥";
+    if (yuan < 0.1) return yuan.toFixed(4) + " ¥";
+    return yuan.toFixed(3) + " ¥";
+  }
+
+  function update() {
+    var v = getVals();
+    var n = v.n;
+    var p = getPricing();
+
+    Object.keys(sliders).forEach(function(k) {
+      document.getElementById("val-" + k).textContent = sliders[k].value;
+    });
+
+    var costs = calcCosts(v, n, p);
+    var noCacheCost = calcNoCacheCost(v, n, p);
+    var savings = noCacheCost > 0 ? ((noCacheCost - costs.total) / noCacheCost * 100) : 0;
+
+    document.getElementById("m-cache-read").textContent = fmt(costs.cacheRead);
+    document.getElementById("m-uncached").textContent = fmt(costs.uncached);
+    document.getElementById("m-output").textContent = fmt(costs.output);
+    document.getElementById("m-total").textContent = fmt(costs.total);
+    document.getElementById("m-nocache").textContent = fmt(noCacheCost);
+    document.getElementById("m-savings").textContent = savings.toFixed(1) + "%";
+
+    // chart: cumulative Pn over turns 1-30
+    var labels = [];
+    var withCacheData = [];
+    var noCacheData = [];
+    for (var i = 1; i <= 30; i++) {
+      labels.push(i);
+      withCacheData.push(calcCosts(v, i, p).total);
+      noCacheData.push(calcNoCacheCost(v, i, p));
+    }
+
+    if (chart) {
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = withCacheData;
+      chart.data.datasets[1].data = noCacheData;
+      chart.update();
+    } else {
+      var ctx = document.getElementById("cost-chart").getContext("2d");
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "With KV Cache",
+              data: withCacheData,
+              borderColor: "#1f8a96",
+              backgroundColor: "rgba(31,138,150,0.1)",
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointRadius: 0
+            },
+            {
+              label: "Without KV Cache",
+              data: noCacheData,
+              borderColor: "#ff7a5c",
+              backgroundColor: "rgba(255,122,92,0.1)",
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top" },
+            tooltip: {
+              mode: "index",
+              intersect: false,
+              callbacks: {
+                label: function(ctx) { return ctx.dataset.label + ": " + ctx.parsed.y.toFixed(4) + " ¥"; }
+              }
+            }
+          },
+          scales: {
+            x: { title: { display: true, text: "Turns (n)" } },
+            y: { title: { display: true, text: "Cumulative Cost (¥)" }, min: 0 }
+          }
+        }
+      });
+    }
+  }
+
+  Object.keys(sliders).forEach(function(k) {
+    sliders[k].addEventListener("input", update);
+  });
+  selModel.addEventListener("change", update);
+  selSlot.addEventListener("change", update);
+
+  update();
+});
+</script>
+</body>
+</html>

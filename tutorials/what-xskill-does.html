@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>What xskill Does · xskill tutorials 🥥</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥥</text></svg>" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="tutorial-styles.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+</head>
+<body>
+
+<div class="sky-decor" aria-hidden="true">
+  <div class="sun-glow"></div>
+  <div class="cloud cloud--1"></div>
+  <div class="cloud cloud--2"></div>
+</div>
+
+<header class="nav-wrap">
+  <nav class="nav">
+    <a class="brand" href="../index.html" aria-label="xskill home">
+      <span class="brand__coco">🥥</span>
+      <span class="brand__name">xskill<span class="brand__dot">.wiki</span></span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="../index.html" data-i18n="nav.home">Home</a></li>
+      <li><a href="../wiki.html" data-i18n="nav.wiki">Wiki</a></li>
+      <li><a href="index.html" data-i18n="nav.tutorials">Tutorials</a></li>
+    </ul>
+    <div class="nav__actions">
+      <div class="lang" role="group" aria-label="language">
+        <button type="button" class="lang__btn" data-set-lang="en" data-i18n="lang.en">EN</button>
+        <button type="button" class="lang__btn" data-set-lang="zh" data-i18n="lang.zh">中</button>
+      </div>
+      <a class="chip chip--ghost" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">★ GitHub</a>
+    </div>
+  </nav>
+</header>
+
+<div class="tutorial-shell">
+  <aside class="tut-sidebar">
+    <div class="tut-sidebar__inner">
+      <div class="tut-sidebar__title" data-i18n="tut.sidebar_title">Tutorials</div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_a">A: Agent Basics</div>
+        <div class="tut-sidebar__links">
+          <a href="make-your-first-api-call.html" data-i18n="tut.a1">Make Your First API Call</a>
+          <a href="what-is-kv-cache.html" data-i18n="tut.a2">What is KV Cache</a>
+          <a href="cache-hit-rate.html" data-i18n="tut.a3">Cache Hit Rate</a>
+          <a href="how-cache-influences-budget.html" data-i18n="tut.a4">How Cache Influences Budget</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_b">B: Skill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-is-a-skill.html" data-i18n="tut.b1">What is a Skill</a>
+          <a href="skill-use-cases.html" data-i18n="tut.b2">Skill Use Cases</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter is-open">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_c">C: xskill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-xskill-does.html" class="is-active" data-i18n="tut.c1">What xskill Does</a>
+          <a href="xskill-for-developers.html" data-i18n="tut.c2">xskill for Developers</a>
+          <a href="xskill-for-production.html" data-i18n="tut.c3">xskill for Production</a>
+        </div>
+      </div>
+      <a class="tut-sidebar__back" href="../wiki.html" data-i18n="tut.back_wiki">← Back to Wiki</a>
+    </div>
+  </aside>
+
+  <main class="tut-content">
+    <article class="tut-article">
+
+      <!-- ===== ENGLISH ===== -->
+      <div data-lang-content="en" class="is-visible">
+        <h1>What xskill Does</h1>
+        <p class="tut-subtitle">xskill automatically distills agent execution trajectories into reusable Skills.</p>
+
+        <h2>Core Capabilities</h2>
+        <ul>
+          <li><b>Trajectory → Skill pipeline</b> — Watch agent sessions, split them into single-intent Atoms, route each Atom to its Skill, and rewrite the Skill when enough material accumulates.</li>
+          <li><b>Team sharing</b> — One person solves a problem; the distilled Skill is automatically available to every teammate. No one writes documentation or copies files around.</li>
+          <li><b>Git-versioned evolution</b> — Every Skill is its own git repository. Every change is traceable and linked back to the trajectories that triggered it.</li>
+          <li><b>Canary A/B + UX Score</b> — New Skill versions are tested on a controlled share of live traffic. The version with a higher UX score (1–10) wins; the loser is discarded automatically.</li>
+        </ul>
+
+        <p class="doc-note">Coming soon: architecture deep-dive and configuration guide.</p>
+      </div>
+
+      <!-- ===== CHINESE ===== -->
+      <div data-lang-content="zh">
+        <h1>xskill 做什么</h1>
+        <p class="tut-subtitle">xskill 自动将 Agent 执行轨迹蒸馏为可复用的 Skill。</p>
+
+        <h2>核心能力</h2>
+        <ul>
+          <li><b>轨迹 → Skill 管线</b> — 监听 Agent 会话，按单一意图切成 Atom，将每个 Atom 路由到对应 Skill，攒够素材后重写 Skill。</li>
+          <li><b>团队共享</b> — 一个人解决了问题，蒸馏出的 Skill 自动对全团队可用。不需要写文档，也不需要手动拷贝文件。</li>
+          <li><b>Git 版本化进化</b> — 每个 Skill 就是一个独立 git 仓库。每次变更都可追溯，并关联到触发它的执行轨迹。</li>
+          <li><b>灰度 A/B + UX 评分</b> — 新版本 Skill 在一部分真实流量上做受控测试。UX 评分（1–10）更高的版本胜出，输的版本自动淘汰。</li>
+        </ul>
+
+        <p class="doc-note">即将推出：架构深度解析和配置指南。</p>
+      </div>
+
+      <div class="tut-nav-footer">
+        <a href="skill-use-cases.html" data-i18n="tut.prev">← Previous</a>
+        <a href="xskill-for-developers.html" data-i18n="tut.next">Next →</a>
+      </div>
+    </article>
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="footer__bar footer__bar--wiki">
+    <span>MIT © 370025263 — brewed under a palm tree.</span>
+    <span><a href="../wiki.html">Wiki</a> · <a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+</footer>
+
+<script src="tutorial-i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>

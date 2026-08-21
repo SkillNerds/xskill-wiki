@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Make Your First API Call · xskill tutorials 🥥</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥥</text></svg>" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="tutorial-styles.css" />
+</head>
+<body>
+
+<div class="sky-decor" aria-hidden="true">
+  <div class="sun-glow"></div>
+  <div class="cloud cloud--1"></div>
+  <div class="cloud cloud--2"></div>
+</div>
+
+<header class="nav-wrap">
+  <nav class="nav">
+    <a class="brand" href="../index.html" aria-label="xskill home">
+      <span class="brand__coco">🥥</span>
+      <span class="brand__name">xskill<span class="brand__dot">.wiki</span></span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="../index.html" data-i18n="nav.home">Home</a></li>
+      <li><a href="../wiki.html" data-i18n="nav.wiki">Wiki</a></li>
+      <li><a href="index.html" data-i18n="nav.tutorials">Tutorials</a></li>
+    </ul>
+    <div class="nav__actions">
+      <div class="lang" role="group" aria-label="language">
+        <button type="button" class="lang__btn" data-set-lang="en" data-i18n="lang.en">EN</button>
+        <button type="button" class="lang__btn" data-set-lang="zh" data-i18n="lang.zh">中</button>
+      </div>
+      <a class="chip chip--ghost" href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">★ GitHub</a>
+    </div>
+  </nav>
+</header>
+
+<div class="tutorial-shell">
+  <aside class="tut-sidebar">
+    <div class="tut-sidebar__inner">
+      <div class="tut-sidebar__title" data-i18n="tut.sidebar_title">Tutorials</div>
+      <div class="tut-sidebar__chapter is-open">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_a">A: Agent Basics</div>
+        <div class="tut-sidebar__links">
+          <a href="make-your-first-api-call.html" class="is-active" data-i18n="tut.a1">Make Your First API Call</a>
+          <a href="what-is-kv-cache.html" data-i18n="tut.a2">What is KV Cache</a>
+          <a href="cache-hit-rate.html" data-i18n="tut.a3">Cache Hit Rate</a>
+          <a href="how-cache-influences-budget.html" data-i18n="tut.a4">How Cache Influences Budget</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_b">B: Skill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-is-a-skill.html" data-i18n="tut.b1">What is a Skill</a>
+          <a href="skill-use-cases.html" data-i18n="tut.b2">Skill Use Cases</a>
+        </div>
+      </div>
+      <div class="tut-sidebar__chapter">
+        <div class="tut-sidebar__chapter-head" data-i18n="tut.ch_c">C: xskill</div>
+        <div class="tut-sidebar__links">
+          <a href="what-xskill-does.html" data-i18n="tut.c1">What xskill Does</a>
+          <a href="xskill-for-developers.html" data-i18n="tut.c2">xskill for Developers</a>
+          <a href="xskill-for-production.html" data-i18n="tut.c3">xskill for Production</a>
+        </div>
+      </div>
+      <a class="tut-sidebar__back" href="../wiki.html" data-i18n="tut.back_wiki">← Back to Wiki</a>
+    </div>
+  </aside>
+
+  <main class="tut-content">
+    <article class="tut-article">
+
+      <!-- ===== ENGLISH ===== -->
+      <div data-lang-content="en" class="is-visible">
+        <h1>Make Your First API Call</h1>
+        <p class="tut-subtitle">Learn the two modes of talking to a reasoning model — Direct Chat and Agent mode — and understand why they handle <code>reasoning_content</code> differently.</p>
+
+        <h2>1. Direct Chat: Ask a Question</h2>
+        <p>Let's start with the simplest possible call. Install the OpenAI-compatible client and talk to DeepSeek's reasoning model:</p>
+
+        <div class="tut-code"><span class="code-label">python</span><code><span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+client = OpenAI(
+    api_key=<span class="str">"&lt;DeepSeek API Key&gt;"</span>,
+    base_url=<span class="str">"https://api.deepseek.com"</span>
+)
+
+messages = [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"9.11 and 9.8, which is greater?"</span>}]
+
+response = client.chat.completions.create(
+    model=<span class="str">"deepseek-v4-pro"</span>,
+    messages=messages,
+    reasoning_effort=<span class="str">"high"</span>,
+    extra_body={<span class="str">"thinking"</span>: {<span class="str">"type"</span>: <span class="str">"enabled"</span>}}
+)
+
+<span class="cmt"># The response has TWO sibling fields:</span>
+reasoning_content = response.choices[<span class="num">0</span>].message.reasoning_content
+content = response.choices[<span class="num">0</span>].message.content
+
+<span class="fn">print</span>(<span class="str">"Thinking:"</span>, reasoning_content[:<span class="num">200</span>])
+<span class="fn">print</span>(<span class="str">"Answer:"</span>, content)</code></div>
+
+        <p>Run this and you'll see two things come back:</p>
+        <ul>
+          <li><code>reasoning_content</code> — the model's internal chain-of-thought (the "thinking")</li>
+          <li><code>content</code> — the final answer shown to the user</li>
+        </ul>
+
+        <h3>Multi-turn: What happens to reasoning_content?</h3>
+        <p>Now let's add a second turn. Watch what we do with the assistant message:</p>
+
+        <div class="tut-code"><span class="code-label">python</span><code><span class="cmt"># Turn 2 — append the assistant response, then ask again</span>
+messages.append(response.choices[<span class="num">0</span>].message)
+messages.append({<span class="str">'role'</span>: <span class="str">'user'</span>, <span class="str">'content'</span>: <span class="str">"How many Rs in 'strawberry'?"</span>})
+
+response2 = client.chat.completions.create(
+    model=<span class="str">"deepseek-v4-pro"</span>,
+    messages=messages,
+    reasoning_effort=<span class="str">"high"</span>,
+    extra_body={<span class="str">"thinking"</span>: {<span class="str">"type"</span>: <span class="str">"enabled"</span>}}
+)</code></div>
+
+        <div class="tut-callout tut-callout--info">
+          <strong>Key insight:</strong> Even though the assistant message in <code>messages</code> still contains <code>reasoning_content</code>, the API silently discards it. The server only looks at <code>content</code> when processing the history. This is Direct Chat mode — reasoning is ephemeral.
+        </div>
+
+        <h2>2. Agent Mode: Add Tools</h2>
+        <p>Now let's turn this into an Agent. The only structural difference: we pass a <code>tools</code> parameter. But this changes the rules dramatically.</p>
+
+        <div class="tut-code"><span class="code-label">python</span><code><span class="kw">import</span> json
+
+tools = [{
+    <span class="str">"type"</span>: <span class="str">"function"</span>,
+    <span class="str">"function"</span>: {
+        <span class="str">"name"</span>: <span class="str">"get_weather"</span>,
+        <span class="str">"description"</span>: <span class="str">"Get current weather for a city"</span>,
+        <span class="str">"parameters"</span>: {
+            <span class="str">"type"</span>: <span class="str">"object"</span>,
+            <span class="str">"properties"</span>: {<span class="str">"city"</span>: {<span class="str">"type"</span>: <span class="str">"string"</span>}},
+            <span class="str">"required"</span>: [<span class="str">"city"</span>]
+        }
+    }
+}]
+
+TOOL_CALL_MAP = {
+    <span class="str">"get_weather"</span>: <span class="kw">lambda</span> city: json.dumps({<span class="str">"temp"</span>: <span class="str">"22°C"</span>, <span class="str">"condition"</span>: <span class="str">"sunny"</span>})
+}
+
+messages = [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"What's the weather in Tokyo?"</span>}]
+
+<span class="kw">while</span> <span class="num">True</span>:
+    response = client.chat.completions.create(
+        model=<span class="str">'deepseek-v4-pro'</span>,
+        messages=messages,
+        tools=tools,
+        reasoning_effort=<span class="str">"high"</span>,
+        extra_body={<span class="str">"thinking"</span>: {<span class="str">"type"</span>: <span class="str">"enabled"</span>}}
+    )
+    <span class="cmt"># MUST include full message (with reasoning_content!)</span>
+    messages.append(response.choices[<span class="num">0</span>].message)
+
+    tool_calls = response.choices[<span class="num">0</span>].message.tool_calls
+    <span class="kw">if</span> tool_calls <span class="kw">is</span> <span class="num">None</span>:
+        <span class="kw">break</span>
+
+    <span class="kw">for</span> tool <span class="kw">in</span> tool_calls:
+        result = TOOL_CALL_MAP[tool.function.name](
+            **json.loads(tool.function.arguments)
+        )
+        messages.append({
+            <span class="str">"role"</span>: <span class="str">"tool"</span>,
+            <span class="str">"tool_call_id"</span>: tool.id,
+            <span class="str">"content"</span>: result
+        })
+
+<span class="fn">print</span>(response.choices[<span class="num">0</span>].message.content)</code></div>
+
+        <div class="tut-callout tut-callout--danger">
+          <strong>Critical difference:</strong> In Agent mode, <code>reasoning_content</code> MUST be passed back in subsequent turns. If you strip it, the server returns HTTP 400. The reasoning is no longer ephemeral — it's part of the conversation state.
+        </div>
+
+        <h2>3. Side-by-Side: Two Modes Compared</h2>
+        <p>Here's pseudo-code showing how the message list is assembled differently in each mode:</p>
+
+        <div class="tut-compare">
+          <div>
+            <h4>Direct Chat Mode</h4>
+            <div class="tut-code" style="margin:8px 0"><code><span class="cmt"># Server IGNORES reasoning_content</span>
+messages = [
+  {role: system, content: S₀},
+  {role: user,   content: U₀},
+  {role: assistant, content: C₁},
+  <span class="cmt"># ↑ reasoning_content silently dropped</span>
+  {role: user,   content: U₁},
+  {role: assistant, content: C₂},
+  {role: user,   content: U₂},
+  ...
+]</code></div>
+          </div>
+          <div>
+            <h4>Agent Mode (with tools)</h4>
+            <div class="tut-code" style="margin:8px 0"><code><span class="cmt"># reasoning_content REQUIRED</span>
+messages = [
+  {role: system, content: S₀},
+  {role: user,   content: U₀},
+  {role: assistant,
+   reasoning_content: R₁,
+   content: C₁,
+   tool_calls: [T₁]},
+  {role: tool, content: TR₁},
+  {role: assistant,
+   reasoning_content: R₂,
+   content: C₂},
+  {role: user,   content: U₁},
+  ...
+]</code></div>
+          </div>
+        </div>
+
+        <h2>4. Symbol Notation</h2>
+        <p>For the rest of this tutorial series, we use compact symbols to refer to each part of a multi-turn conversation:</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>Symbol</th><th>Meaning</th><th>API field</th></tr></thead>
+          <tbody>
+            <tr><td><strong>S₀</strong></td><td>System prompt</td><td><code>{"role": "system", "content": ...}</code></td></tr>
+            <tr><td><strong>U₀, U₁, …, Uₙ</strong></td><td>User input at turn i</td><td><code>{"role": "user", "content": ...}</code></td></tr>
+            <tr><td><strong>Rᵢ</strong></td><td>Reasoning (thinking) at turn i</td><td><code>message.reasoning_content</code></td></tr>
+            <tr><td><strong>Cᵢ</strong></td><td>Content (final answer) at turn i</td><td><code>message.content</code></td></tr>
+            <tr><td><strong>Tᵢ</strong></td><td>Tool call(s) at turn i</td><td><code>message.tool_calls</code></td></tr>
+            <tr><td><strong>TRᵢ</strong></td><td>Tool result at turn i</td><td><code>{"role": "tool", "content": ...}</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="tut-callout tut-callout--info">
+          <strong>Why these symbols matter:</strong> In the next tutorials, we'll use them to write concise formulas for cache hit rate and cost. For example, the total input tokens at turn n in Agent mode is: S₀ + U₀ + Σ(Rᵢ + Cᵢ + Tᵢ + TRᵢ + Uᵢ) for i = 1..n.
+        </div>
+
+        <h2>Summary</h2>
+        <ul>
+          <li>A reasoning model returns two fields: <code>reasoning_content</code> (thinking) and <code>content</code> (answer).</li>
+          <li>In Direct Chat, reasoning is ephemeral — the server drops it from history.</li>
+          <li>In Agent mode (with <code>tools</code>), reasoning is mandatory — stripping it causes errors.</li>
+          <li>This structural difference is what makes Agent mode's cache behavior fundamentally different from Direct Chat, as we'll see next.</li>
+        </ul>
+
+      </div>
+
+      <!-- ===== CHINESE ===== -->
+      <div data-lang-content="zh">
+        <h1>发出你的第一个 API 请求</h1>
+        <p class="tut-subtitle">学习与推理模型对话的两种模式 —— 直聊模式与 Agent 模式 —— 并理解它们为何以不同方式处理 <code>reasoning_content</code>。</p>
+
+        <h2>1. 直聊模式：问一个问题</h2>
+        <p>我们从最简单的调用开始。安装 OpenAI 兼容客户端，调用 DeepSeek 的推理模型：</p>
+
+        <div class="tut-code"><span class="code-label">python</span><code><span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+client = OpenAI(
+    api_key=<span class="str">"&lt;DeepSeek API Key&gt;"</span>,
+    base_url=<span class="str">"https://api.deepseek.com"</span>
+)
+
+messages = [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"9.11 and 9.8, which is greater?"</span>}]
+
+response = client.chat.completions.create(
+    model=<span class="str">"deepseek-v4-pro"</span>,
+    messages=messages,
+    reasoning_effort=<span class="str">"high"</span>,
+    extra_body={<span class="str">"thinking"</span>: {<span class="str">"type"</span>: <span class="str">"enabled"</span>}}
+)
+
+<span class="cmt"># 返回中有两个并列字段：</span>
+reasoning_content = response.choices[<span class="num">0</span>].message.reasoning_content
+content = response.choices[<span class="num">0</span>].message.content
+
+<span class="fn">print</span>(<span class="str">"思考过程:"</span>, reasoning_content[:<span class="num">200</span>])
+<span class="fn">print</span>(<span class="str">"最终回答:"</span>, content)</code></div>
+
+        <p>运行后你会看到两样东西：</p>
+        <ul>
+          <li><code>reasoning_content</code> — 模型内部的思维链（"思考过程"）</li>
+          <li><code>content</code> — 给用户看的最终回答</li>
+        </ul>
+
+        <h3>多轮对话：reasoning_content 会怎样？</h3>
+        <p>现在加一个第二轮。注意我们怎么处理 assistant 消息：</p>
+
+        <div class="tut-code"><span class="code-label">python</span><code><span class="cmt"># 第二轮 —— 把 assistant 回复追加进去，再问一个问题</span>
+messages.append(response.choices[<span class="num">0</span>].message)
+messages.append({<span class="str">'role'</span>: <span class="str">'user'</span>, <span class="str">'content'</span>: <span class="str">"How many Rs in 'strawberry'?"</span>})
+
+response2 = client.chat.completions.create(
+    model=<span class="str">"deepseek-v4-pro"</span>,
+    messages=messages,
+    reasoning_effort=<span class="str">"high"</span>,
+    extra_body={<span class="str">"thinking"</span>: {<span class="str">"type"</span>: <span class="str">"enabled"</span>}}
+)</code></div>
+
+        <div class="tut-callout tut-callout--info">
+          <strong>关键认知：</strong>尽管 messages 里的 assistant 消息仍然带着 <code>reasoning_content</code>，API 会静默丢弃它。服务端在处理历史时只看 <code>content</code>。这就是直聊模式 —— 推理是临时的、用完即弃的。
+        </div>
+
+        <h2>2. Agent 模式：加入 Tools</h2>
+        <p>现在把它变成 Agent。结构上唯一的区别：传入 <code>tools</code> 参数。但规则因此彻底改变。</p>
+
+        <div class="tut-code"><span class="code-label">python</span><code><span class="kw">import</span> json
+
+tools = [{
+    <span class="str">"type"</span>: <span class="str">"function"</span>,
+    <span class="str">"function"</span>: {
+        <span class="str">"name"</span>: <span class="str">"get_weather"</span>,
+        <span class="str">"description"</span>: <span class="str">"Get current weather for a city"</span>,
+        <span class="str">"parameters"</span>: {
+            <span class="str">"type"</span>: <span class="str">"object"</span>,
+            <span class="str">"properties"</span>: {<span class="str">"city"</span>: {<span class="str">"type"</span>: <span class="str">"string"</span>}},
+            <span class="str">"required"</span>: [<span class="str">"city"</span>]
+        }
+    }
+}]
+
+TOOL_CALL_MAP = {
+    <span class="str">"get_weather"</span>: <span class="kw">lambda</span> city: json.dumps({<span class="str">"temp"</span>: <span class="str">"22°C"</span>, <span class="str">"condition"</span>: <span class="str">"sunny"</span>})
+}
+
+messages = [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"东京现在天气怎么样？"</span>}]
+
+<span class="kw">while</span> <span class="num">True</span>:
+    response = client.chat.completions.create(
+        model=<span class="str">'deepseek-v4-pro'</span>,
+        messages=messages,
+        tools=tools,
+        reasoning_effort=<span class="str">"high"</span>,
+        extra_body={<span class="str">"thinking"</span>: {<span class="str">"type"</span>: <span class="str">"enabled"</span>}}
+    )
+    <span class="cmt"># 必须保留完整的 message（包含 reasoning_content！）</span>
+    messages.append(response.choices[<span class="num">0</span>].message)
+
+    tool_calls = response.choices[<span class="num">0</span>].message.tool_calls
+    <span class="kw">if</span> tool_calls <span class="kw">is</span> <span class="num">None</span>:
+        <span class="kw">break</span>
+
+    <span class="kw">for</span> tool <span class="kw">in</span> tool_calls:
+        result = TOOL_CALL_MAP[tool.function.name](
+            **json.loads(tool.function.arguments)
+        )
+        messages.append({
+            <span class="str">"role"</span>: <span class="str">"tool"</span>,
+            <span class="str">"tool_call_id"</span>: tool.id,
+            <span class="str">"content"</span>: result
+        })
+
+<span class="fn">print</span>(response.choices[<span class="num">0</span>].message.content)</code></div>
+
+        <div class="tut-callout tut-callout--danger">
+          <strong>关键区别：</strong>在 Agent 模式下，<code>reasoning_content</code> 必须在后续轮次中传回。如果你把它去掉，服务端会返回 HTTP 400 错误。推理不再是临时的——它是对话状态的一部分。
+        </div>
+
+        <h2>3. 并排对比：两种模式的 messages 组装</h2>
+        <p>以下伪代码展示两种模式下 message 列表的不同组装方式：</p>
+
+        <div class="tut-compare">
+          <div>
+            <h4>直聊模式</h4>
+            <div class="tut-code" style="margin:8px 0"><code><span class="cmt"># 服务端会忽略 reasoning_content</span>
+messages = [
+  {role: system, content: S₀},
+  {role: user,   content: U₀},
+  {role: assistant, content: C₁},
+  <span class="cmt"># ↑ reasoning_content 被静默丢弃</span>
+  {role: user,   content: U₁},
+  {role: assistant, content: C₂},
+  {role: user,   content: U₂},
+  ...
+]</code></div>
+          </div>
+          <div>
+            <h4>Agent 模式（带 tools）</h4>
+            <div class="tut-code" style="margin:8px 0"><code><span class="cmt"># reasoning_content 必须保留</span>
+messages = [
+  {role: system, content: S₀},
+  {role: user,   content: U₀},
+  {role: assistant,
+   reasoning_content: R₁,
+   content: C₁,
+   tool_calls: [T₁]},
+  {role: tool, content: TR₁},
+  {role: assistant,
+   reasoning_content: R₂,
+   content: C₂},
+  {role: user,   content: U₁},
+  ...
+]</code></div>
+          </div>
+        </div>
+
+        <h2>4. 符号记法</h2>
+        <p>在后续教程中，我们用以下紧凑符号来指代多轮对话的各个组成部分：</p>
+
+        <table class="tut-symbol-table">
+          <thead><tr><th>符号</th><th>含义</th><th>对应的 API 字段</th></tr></thead>
+          <tbody>
+            <tr><td><strong>S₀</strong></td><td>系统提示词</td><td><code>{"role": "system", "content": ...}</code></td></tr>
+            <tr><td><strong>U₀, U₁, …, Uₙ</strong></td><td>第 i 轮的用户输入</td><td><code>{"role": "user", "content": ...}</code></td></tr>
+            <tr><td><strong>Rᵢ</strong></td><td>第 i 轮的推理（思考）</td><td><code>message.reasoning_content</code></td></tr>
+            <tr><td><strong>Cᵢ</strong></td><td>第 i 轮的内容（最终回答）</td><td><code>message.content</code></td></tr>
+            <tr><td><strong>Tᵢ</strong></td><td>第 i 轮的工具调用</td><td><code>message.tool_calls</code></td></tr>
+            <tr><td><strong>TRᵢ</strong></td><td>第 i 轮的工具返回</td><td><code>{"role": "tool", "content": ...}</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="tut-callout tut-callout--info">
+          <strong>为什么这些符号很重要：</strong>在接下来的教程中，我们会用它们写出缓存命中率和成本的简洁公式。例如，Agent 模式下第 n 轮的总输入 token 数为：S₀ + U₀ + Σ(Rᵢ + Cᵢ + Tᵢ + TRᵢ + Uᵢ)，其中 i = 1..n。
+        </div>
+
+        <h2>小结</h2>
+        <ul>
+          <li>推理模型返回两个字段：<code>reasoning_content</code>（思考）和 <code>content</code>（回答）。</li>
+          <li>直聊模式下，推理是临时的——服务端会从历史中丢弃它。</li>
+          <li>Agent 模式下（带 <code>tools</code>），推理是必须的——去掉会报错。</li>
+          <li>这种结构差异使得 Agent 模式的缓存行为与直聊模式根本不同，下一篇我们就来讲这个。</li>
+        </ul>
+      </div>
+
+      <div class="tut-nav-footer">
+        <a href="index.html" data-i18n="tut.prev">← Previous</a>
+        <a href="what-is-kv-cache.html" data-i18n="tut.next">Next →</a>
+      </div>
+    </article>
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="footer__bar footer__bar--wiki">
+    <span>MIT © 370025263 — brewed under a palm tree.</span>
+    <span><a href="../wiki.html">Wiki</a> · <a href="https://github.com/SkillNerds/xskill" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+</footer>
+
+<script src="tutorial-i18n.js"></script>
+</body>
+</html>

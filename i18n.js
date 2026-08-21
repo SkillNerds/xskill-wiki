@@ -183,6 +183,7 @@
       "w.nav_roadmap": "Roadmap",
       "w.nav_news": "News",
       "w.nav_license": "License",
+      "w.nav_tutorials": "Tutorials",
 
       "w.overview_h": "Overview",
       "w.overview_p1": "Your coding agent re-derives the same solution every time it bumps into a familiar problem. You either re-explain it, or hand-maintain a prompt library that quietly rots when no one is looking. <b>xskill</b> distills reusable Skills from your agent's own execution trajectories so that work goes away.",
@@ -558,6 +559,7 @@
       "w.nav_roadmap": "Roadmap",
       "w.nav_news": "动态",
       "w.nav_license": "License",
+      "w.nav_tutorials": "教程",
 
       "w.overview_h": "概览",
       "w.overview_p1": "agent 每次撞上同一个问题，都会把同一套解法重推一遍。你要么再讲一遍，要么自己维护一份 prompt 库——而这份库没人看的时候就慢慢腐烂。<b>xskill</b> 从 agent 自己的执行轨迹里蒸馏出可复用的 Skill，把这件事接管掉。",
