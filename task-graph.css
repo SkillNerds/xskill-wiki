@@ -1,0 +1,151 @@
+/* Task graph reference: reuse the site's palette and document layout. */
+html[lang="en"] [data-doc-lang="zh"],
+html[lang="zh-CN"] [data-doc-lang="en"] { display: none !important; }
+.task-hero .wiki-hero__inner { max-width: 980px; padding-bottom: 30px; }
+.task-hero h1 { max-width: 850px; margin-inline: auto; line-height: 1.18; }
+.task-hero .section__sub { max-width: 750px; }
+.task-meta { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:20px 0; }
+.task-meta > span { border:1px solid #e7c98f; background:#fffaf0; border-radius:999px; padding:5px 12px; font-size:13px; }
+.task-breadcrumb { margin-bottom:20px; color:var(--sea-deep); font-size:14px; }
+.task-breadcrumb a { color:inherit; font-weight:700; }
+.task-shell .doc-sec { scroll-margin-top:95px; }
+.task-shell .doc-sec h2 { line-height:1.35; }
+.task-shell .doc-sec h3 { font-size:20px; margin:26px 0 12px; color:var(--sea-deep); line-height:1.4; }
+.task-shell .doc-sec p, .task-shell .doc-sec li { line-height:1.85; }
+.task-shell .doc-sec ul { padding-left:23px; margin:12px 0 18px; }
+.task-shell .doc-sec li { margin-bottom:8px; }
+.task-shell .doc-sec code { white-space:normal; overflow-wrap:anywhere; }
+.task-table { overflow-x:auto; margin:18px 0; border-radius:12px; }
+.task-table .doc-table { margin:0; min-width:480px; }
+.task-table:focus-visible, .task-diagram:focus-visible { outline:3px solid var(--sea); outline-offset:3px; }
+.task-diagram { overflow-x:auto; border:1px solid #d6e8df; border-radius:16px; margin:22px 0 10px; background:#fffdf7; }
+.task-diagram img { display:block; width:100%; min-width:660px; height:auto; }
+.task-caption { font-size:13px !important; color:var(--ink-soft) !important; }
+.task-shell .wiki-toc__card { max-height:calc(100vh - 112px); overflow-y:auto; }
+.task-shell .wiki-toc__card nav a { font-size:13px; padding:6px 9px; }
+.task-status { border-top:4px solid var(--coral); }
+.task-footer { text-align:center; padding:30px 20px 55px; color:var(--ink-soft); }
+.skip-link { position:fixed; top:8px; left:8px; padding:12px; z-index:100; background:white; color:var(--sea-deep); transform:translateY(-160%); }
+.skip-link:focus { transform:translateY(0); }
+.task-jump { display:block; margin:18px 0 4px; padding:15px 18px; border:1px solid #bfe7e6; border-radius:12px; background:#eaf6f7; }
+@media(max-width:900px) {
+  .task-shell .wiki-toc__card { max-height:none; }
+  .task-shell .wiki-toc__card nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:520px) {
+  .task-hero { padding-top:25px; }
+  .task-hero h1 { font-size:32px; }
+  .task-hero .wiki-hero__inner { padding-bottom:10px; }
+  .task-shell .doc-sec { padding:24px 18px; }
+  .task-shell .doc-sec h2 { font-size:24px; }
+  .task-meta { font-size:12px; }
+  .task-diagram img { min-width:660px; }
+}
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+@media print {
+  .nav-wrap,.sky-decor,.wiki-toc,.skip-link,.lang { display:none !important; }
+  .wiki-shell { display:block; max-width:none; padding:0; }
+  .doc-sec { box-shadow:none; border:none; break-inside:auto; }
+  .task-diagram,.task-table { overflow:visible; }
+  .task-diagram img,.task-table .doc-table { min-width:0; }
+}
+.task-shell main { min-width:0; }
+.task-shell figure { margin:22px 0; }
+/* Long reference sections stay readable even before an observer fires. */
+.task-shell .doc-sec.reveal { opacity:1; transform:none; }
+
+.task-scroll-hint { display:none; }
+@media(max-width:900px) { .task-scroll-hint { display:block; } }
+
+/* Keep the reference compact and make worked rules easy to scan. */
+.task-hero h1 { font-size:44px; }
+.task-hero .wiki-hero__inner { padding-top:24px; padding-bottom:12px; }
+.task-breadcrumb { margin-bottom:12px; }
+.task-meta { margin:14px 0; }
+.task-shell .doc-sec { box-shadow:0 4px 14px rgba(84,62,36,.07); }
+.task-shell .doc-sec blockquote { margin:20px 0; padding:18px 20px; background:#edf7f5; border-left:4px solid #397b80; border-radius:0 12px 12px 0; }
+.task-shell .doc-sec blockquote p:last-child { margin-bottom:0; }
+.task-shell .wiki-toc__card summary { cursor:pointer; font-size:14px; font-weight:700; color:var(--sea-deep); }
+.task-shell .wiki-toc__card[open] summary { margin-bottom:12px; }
+@media(max-width:900px) {
+  .task-hero h1 { font-size:32px; }
+  .task-shell { padding-top:20px; }
+  .task-shell .doc-sec blockquote { padding:14px; }
+}
+
+/* Explanations reflow as real text, including on a narrow phone screen. */
+.explain-visual { padding:24px; background:#f8faf6; border:1px solid #cfddd5; border-radius:18px; }
+.visual-head { display:flex; gap:14px; align-items:flex-start; margin-bottom:24px; }
+.visual-number { flex:none; width:36px; height:36px; display:grid; place-items:center; border-radius:50%; background:#285e5a; color:white; font:700 14px monospace; }
+.task-shell .visual-head h3 { margin:0 0 7px; font-size:23px; }
+.task-shell .visual-head p,.task-shell .visual-footnote { font-size:14px; color:#526762; margin:0; line-height:1.7; }
+.task-shell .visual-footnote { margin-top:20px; }
+.task-shell .story-timeline { list-style:none; padding:0; margin:0; }
+.story-timeline li { position:relative; display:flex; gap:14px; padding-bottom:18px; }
+.story-timeline li::before { content:""; position:absolute; left:17px; top:34px; bottom:0; width:2px; background:#a9c9c0; }
+.story-timeline li:last-child::before { display:none; }
+.story-dot { position:relative; flex:none; width:36px; height:36px; display:grid; place-items:center; background:#e0f1eb; color:#235b54; border:1px solid #80b6a7; border-radius:50%; font-size:12px; font-weight:700; }
+.story-card { flex:1; min-width:0; background:white; border:1px solid #d4e4de; border-left:4px solid #38786a; border-radius:12px; padding:16px; }
+.story-top { display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; align-items:center; }
+.goal-tag { font-size:12px; background:#e6f2ec; color:#225548; padding:4px 8px; border-radius:6px; }
+.goal-b .story-dot,.goal-b .goal-tag { background:#fff0d7; color:#765020; border-color:#c9a064; }
+.goal-b .story-card { border-left-color:#b07a31; }
+.task-shell .story-quote { font-weight:700; font-size:18px; margin:12px 0 6px; }
+.task-shell .story-card p { font-size:14px; margin-bottom:8px; }
+.story-card summary { font-size:13px; font-weight:700; color:#285e5a; cursor:pointer; padding:4px 0; }
+.story-card details p { margin-top:8px; }
+.decision-entry { background:#285e5a; color:white; padding:14px 18px; border-radius:10px; text-align:center; font-weight:700; }
+.decision-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:20px; }
+.decision-card { position:relative; background:white; border:1px solid #cedfd7; border-radius:12px; padding:16px; }
+.decision-card::before { content:""; position:absolute; width:1px; height:21px; background:#83a699; top:-21px; left:50%; }
+.decision-symbol { display:block; font-size:25px; color:#285e5a; margin-bottom:8px; }
+.decision-card h4 { font-size:16px; line-height:1.5; }
+.task-shell .decision-card p { font-size:14px; line-height:1.7; margin-bottom:0; }
+.task-shell .decision-card .decision-result { font-weight:700; color:#285e5a; margin:10px 0; }
+.allocation-equation { display:flex; gap:28px; align-items:center; justify-content:center; margin:22px 0; }
+.allocation-equation>div { display:flex; flex-direction:column; text-align:center; gap:4px; }
+.allocation-total { font-size:48px; font-weight:800; line-height:1.1; color:#285e5a; }
+.allocation-equation strong { font-size:32px; color:#285e5a; }
+.allocation-equation span { font-variant-numeric:tabular-nums; }
+.allocation-bar { display:flex; height:58px; border-radius:12px; overflow:hidden; font-weight:800; }
+.allocation-bar span { display:grid; place-items:center; }
+.allocation-a { flex:61; background:#285e5a; color:white; }
+.allocation-b { flex:40; background:#e9c18a; color:#4d3518; }
+.allocation-legend { display:flex; flex-wrap:wrap; gap:12px 24px; margin-top:12px; font-size:13px; }
+.allocation-legend>span { display:flex; align-items:center; gap:7px; }
+.allocation-legend i { width:11px; height:11px; border-radius:3px; }
+.swatch-a { background:#285e5a; }.swatch-b { background:#e9c18a; }
+.task-shell .allocation-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); list-style:none; padding:0; gap:12px; margin:20px 0 0; }
+.allocation-steps li { display:flex; flex-direction:column; background:white; border:1px solid #cedfd7; padding:12px; border-radius:10px; font-size:13px; }
+.allocation-steps strong { font-size:20px; margin-top:5px; }
+.outcome-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.outcome-grid>div { background:white; border:1px solid #cedfd7; padding:18px; border-radius:12px; }
+.outcome-label { display:block; font-size:13px; color:#526762; margin-bottom:8px; }
+.outcome-grid strong { font-size:22px; color:#285e5a; }
+.task-shell .outcome-grid p { font-size:14px; margin:8px 0 0; }
+.explain-visual summary:focus-visible { outline:3px solid #397b80; outline-offset:3px; }
+@media(max-width:650px) {
+  .explain-visual { padding:16px 12px; }
+  .task-shell .visual-head h3 { font-size:20px; }
+  .visual-head { gap:10px; }
+  .story-timeline li { gap:8px; }
+  .story-card { padding:12px; }
+  .story-top { align-items:flex-start; flex-direction:column; }
+  .decision-grid,.task-shell .allocation-steps { grid-template-columns:1fr; }
+  .decision-card::before { display:none; }
+  .allocation-equation { gap:20px; }
+  .allocation-equation strong { font-size:26px; }
+  .outcome-grid { grid-template-columns:1fr; }
+}
+@media print { .explain-visual { break-inside:auto; } .story-card details>p { display:block; } }
+
+.reading-paths { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:22px; }
+.reading-paths a { display:flex; flex-direction:column; gap:7px; padding:15px; border:1px solid #cedfd7; border-radius:10px; background:#f8faf6; }
+.reading-paths strong { font-size:15px; line-height:1.5; }
+.reading-paths a>span { font-size:13px; color:#526762; font-weight:400; line-height:1.6; }
+.reading-paths a:hover { background:#e6f2ec; }
+.reading-paths a:focus-visible,.reference-detail summary:focus-visible { outline:3px solid #397b80; outline-offset:3px; }
+.reference-detail { margin:18px 0; border:1px solid #d4e4de; border-radius:10px; padding:12px 14px; }
+.reference-detail summary { cursor:pointer; font-size:14px; font-weight:700; color:#285e5a; }
+.reference-detail .task-table { margin-bottom:0; }
+@media(max-width:650px) { .reading-paths { grid-template-columns:1fr; } }
